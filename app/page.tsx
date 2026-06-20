@@ -19,9 +19,6 @@ export default function Home() {
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Ce site n'est pas encore disponible
             <a>
-              Learning
-            </a>{" "}
-            center.
           </p>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
