@@ -58,7 +58,7 @@ export default function Home() {
         {/* BOUTON ROND AVEC EFFET FLORESCENT */}
         <div className="flex flex-col items-center w-full justify-center mt-8">
           <a
-            href="https://boutique-bisou.vth-mc.fr/dashboard"
+            href="https://boutique-bisou.vercel.app/dashboard"
             onClick={handleClick}
             className="group relative flex items-center justify-center w-24 h-24 rounded-full text-white font-medium text-sm text-center shadow-lg transform transition-all duration-300 hover:scale-110 active:scale-95 overflow-hidden bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]"
           >
