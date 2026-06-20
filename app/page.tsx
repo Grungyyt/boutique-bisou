@@ -18,12 +18,12 @@ export default function Home() {
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Ce site n'est pas encore disponible
-            <a>
           </p>
         </div>
+        
+        {/* Section pour les futurs liens (boutons, réseaux sociaux, etc.) */}
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          </a>
-          </a>
+          {/* Vous pourrez ajouter vos liens ici sous la forme : <a href="#">Mon lien</a> */}
         </div>
       </main>
     </div>
