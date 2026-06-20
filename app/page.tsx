@@ -42,8 +42,8 @@ export default function Home() {
           >
             <Image
               className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
+              src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+              alt="Boutique Bisou"
               width={16}
               height={16}
             />
