@@ -24,7 +24,7 @@ export default function Home() {
         {/* Section pour les futurs liens (boutons, réseaux sociaux, etc.) */}
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           {/* Vous pourrez ajouter vos liens ici sous la forme : <a href="#">Mon lien</a> */}
-          <a href="Retour a l'acceuille.">https://boutique-bisou.vth-mc.fr</a> */}
+          <a href="Retour a l'acceuille.">https://boutique-bisou.vth-mc.fr</a>
         </div>
       </main>
     </div>
