@@ -42,7 +42,7 @@ export default function Home() {
           >
             <Image
               className="dark:invert"
-              src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+              src="/logo-bisou.svg"
               alt="Boutique Bisou"
               width={16}
               height={16}
