@@ -205,7 +205,7 @@ export default function Home() {
         {/* BOUTON ROND AVEC SON STYLE FLORAL UNIQUE */}
         <div className="flex flex-col items-center w-full justify-center mt-8">
           <a
-            href="https://boutique-bisou.vth-mc.fr/dashboard"
+            href="https://boutique-bisou.vth-mc.fr/verif"
             onClick={handleClick}
             className="group relative flex items-center justify-center w-28 h-28 rounded-full text-white font-semibold text-center shadow-xl transform transition-all duration-300 hover:scale-110 active:scale-95 overflow-hidden bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 hover:shadow-[0_0_35px_rgba(244,63,94,0.6)]"
           >
