@@ -100,10 +100,10 @@ export default function HomePage() {
             vêtements uniques, sélectionnés un à un.
           </p>
           <Link
-            href="/dashboard"
+            href="/boutique"
             className="mt-8 inline-block rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
           >
-            Accéder au tableau de bord
+            Accéder à la boutique
           </Link>
         </div>
 
