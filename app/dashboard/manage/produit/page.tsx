@@ -14,6 +14,7 @@ type Produit = {
   genre: string;
   taille: string;
   prix_tickets: number;
+  quantite: number;
   photo_url: string | null;
   created_at: string;
 };
@@ -45,6 +46,7 @@ const emptyForm = {
   genre: GENRES[2],
   taille: TAILLES[0],
   prix_tickets: 1,
+  quantite: 1,
 };
 
 export default function ManageProduitPage() {
@@ -101,6 +103,7 @@ export default function ManageProduitPage() {
       body.append("genre", form.genre);
       body.append("taille", form.taille);
       body.append("prix_tickets", String(form.prix_tickets));
+      body.append("quantite", String(form.quantite));
       if (photo) {
         body.append("photo", photo);
       }
@@ -141,6 +144,35 @@ export default function ManageProduitPage() {
       if (prev) URL.revokeObjectURL(prev);
       return file ? URL.createObjectURL(file) : null;
     });
+  };
+
+  const handleQuantiteChange = async (id: string, newQuantite: number) => {
+    if (newQuantite < 0) return;
+
+    const previous = produits;
+    setProduits((prev) => prev.map((p) => (p.id === id ? { ...p, quantite: newQuantite } : p)));
+
+    try {
+      const res = await fetch(`${API_URL}/produits/${id}/quantite`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ quantite: newQuantite }),
+      });
+
+      if (res.status === 401) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      if (!res.ok) {
+        setError("Impossible de mettre à jour la quantité.");
+        setProduits(previous);
+      }
+    } catch {
+      setError("Impossible de contacter le serveur.");
+      setProduits(previous);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -288,6 +320,18 @@ export default function ManageProduitPage() {
           </div>
 
           <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">Quantité</label>
+            <input
+              type="number"
+              min={0}
+              required
+              value={form.quantite}
+              onChange={(e) => setForm({ ...form, quantite: Number(e.target.value) })}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+
+          <div>
             <label className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">Photo</label>
             <input
               type="file"
@@ -327,13 +371,14 @@ export default function ManageProduitPage() {
                 <th className="px-4 py-3">Genre</th>
                 <th className="px-4 py-3">Taille</th>
                 <th className="px-4 py-3">Prix</th>
+                <th className="px-4 py-3">Quantité</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {loading && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
+                  <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
                     Chargement...
                   </td>
                 </tr>
@@ -341,14 +386,17 @@ export default function ManageProduitPage() {
 
               {!loading && produits.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
+                  <td colSpan={9} className="px-4 py-6 text-center text-zinc-400">
                     Aucun vêtement pour le moment.
                   </td>
                 </tr>
               )}
 
               {produits.map((p) => (
-                <tr key={p.id} className="text-zinc-700 dark:text-zinc-300">
+                <tr
+                  key={p.id}
+                  className={`text-zinc-700 dark:text-zinc-300 ${p.quantite === 0 ? "opacity-60" : ""}`}
+                >
                   <td className="px-4 py-3">
                     {p.photo_url ? (
                       <img
@@ -366,6 +414,29 @@ export default function ManageProduitPage() {
                   <td className="px-4 py-3">{p.genre}</td>
                   <td className="px-4 py-3">{p.taille}</td>
                   <td className="px-4 py-3">{p.prix_tickets} 🎟️</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleQuantiteChange(p.id, p.quantite - 1)}
+                        disabled={p.quantite <= 0}
+                        className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center font-medium">{p.quantite}</span>
+                      <button
+                        onClick={() => handleQuantiteChange(p.id, p.quantite + 1)}
+                        className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        +
+                      </button>
+                    </div>
+                    {p.quantite === 0 && (
+                      <span className="mt-1 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                        Rupture de stock
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDelete(p.id)}
