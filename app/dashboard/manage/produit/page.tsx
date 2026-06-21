@@ -13,6 +13,7 @@ type Produit = {
   genre: string;
   taille: string;
   prix_tickets: number;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -52,6 +53,8 @@ export default function ManageProduitPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const fetchProduits = async () => {
     setLoading(true);
@@ -90,11 +93,21 @@ export default function ManageProduitPage() {
     setError(null);
 
     try {
+      const body = new FormData();
+      body.append("nom", form.nom);
+      body.append("couleur", form.couleur);
+      body.append("type", form.type);
+      body.append("genre", form.genre);
+      body.append("taille", form.taille);
+      body.append("prix_tickets", String(form.prix_tickets));
+      if (photo) {
+        body.append("photo", photo);
+      }
+
       const res = await fetch(`${API_URL}/produits`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(form),
+        body,
       });
 
       if (res.status === 401) {
@@ -110,12 +123,23 @@ export default function ManageProduitPage() {
       }
 
       setForm(emptyForm);
+      setPhoto(null);
+      setPhotoPreview(null);
       await fetchProduits();
     } catch {
       setError("Impossible de contacter le serveur.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setPhoto(file);
+    setPhotoPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -252,6 +276,23 @@ export default function ManageProduitPage() {
             />
           </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">Photo</label>
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/webp, image/gif"
+              onChange={handlePhotoChange}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-1.5 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-zinc-700 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:file:bg-zinc-800 dark:file:text-zinc-200"
+            />
+            {photoPreview && (
+              <img
+                src={photoPreview}
+                alt="Aperçu"
+                className="mt-2 h-16 w-16 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+              />
+            )}
+          </div>
+
           <div className="sm:col-span-2 lg:col-span-3">
             <button
               type="submit"
@@ -268,6 +309,7 @@ export default function ManageProduitPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
               <tr>
+                <th className="px-4 py-3" />
                 <th className="px-4 py-3">Nom</th>
                 <th className="px-4 py-3">Couleur</th>
                 <th className="px-4 py-3">Type</th>
@@ -280,7 +322,7 @@ export default function ManageProduitPage() {
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {loading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
                     Chargement...
                   </td>
                 </tr>
@@ -288,7 +330,7 @@ export default function ManageProduitPage() {
 
               {!loading && produits.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-6 text-center text-zinc-400">
                     Aucun vêtement pour le moment.
                   </td>
                 </tr>
@@ -296,6 +338,17 @@ export default function ManageProduitPage() {
 
               {produits.map((p) => (
                 <tr key={p.id} className="text-zinc-700 dark:text-zinc-300">
+                  <td className="px-4 py-3">
+                    {p.photo_url ? (
+                      <img
+                        src={p.photo_url}
+                        alt={p.nom}
+                        className="h-10 w-10 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium">{p.nom}</td>
                   <td className="px-4 py-3">{p.couleur}</td>
                   <td className="px-4 py-3">{p.type}</td>
