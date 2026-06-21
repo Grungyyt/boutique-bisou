@@ -12,21 +12,40 @@ const IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
 ];
 
-// Légères variations pour que la pile ait l'air organique plutôt que mécanique.
+// Tags affichés en bas à gauche de chaque carte (comme les pastilles de la vidéo).
+const TAGS: [string, string][] = [
+  ["BOUTIQUE BISOU", "PIÈCE 01"],
+  ["BOUTIQUE BISOU", "PIÈCE 02"],
+  ["BOUTIQUE BISOU", "PIÈCE 03"],
+  ["BOUTIQUE BISOU", "PIÈCE 04"],
+  ["BOUTIQUE BISOU", "PIÈCE 05"],
+];
+
+// Texte de la bulle verte qui glisse depuis la droite, comme dans la vidéo.
+const CAPTIONS = [
+  "Coup de cœur de la semaine !",
+  "Pièce unique en stock !",
+  "Plusieurs tailles disponibles !",
+  "Sélectionnée avec amour !",
+  "Fraîchement arrivée en boutique !",
+];
+
 const ROT_JITTER = [0, -6, 5, -4, 7];
 
-const SWIPE_MS = 550; // durée du swipe vers la sortie
-const SETTLE_MS = 480; // durée du repositionnement de la pile
-const FRONT_HOLD_MS = 2400; // temps passé devant avant de swiper
+const SWIPE_MS = 550;
+const SETTLE_MS = 480;
+const BUBBLE_DELAY_MS = 550; // la bulle apparaît un peu après que la carte se pose
+const FRONT_HOLD_MS = 2200; // temps devant après l'apparition de la bulle
 
-const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + FRONT_HOLD_MS;
+const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + BUBBLE_DELAY_MS + FRONT_HOLD_MS;
 
 export default function HomePage() {
-  // order[0] = carte du dessus, order[4] = carte du dessous
   const [order, setOrder] = useState<number[]>(IMAGES.map((_, i) => i));
   const [swipingId, setSwipingId] = useState<number | null>(null);
+  const [bubbleVisible, setBubbleVisible] = useState(false);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bubbleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const runCycle = useCallback(() => {
     timerRef.current = setTimeout(() => {
@@ -34,25 +53,33 @@ export default function HomePage() {
         runCycle();
         return;
       }
-      setOrder((prev) => {
-        setSwipingId(prev[0]);
-        return prev;
-      });
 
-      // après l'animation de sortie, on envoie la carte au fond de la pile
-      setTimeout(() => {
-        setOrder((prev) => [...prev.slice(1), prev[0]]);
-        setSwipingId(null);
-      }, SWIPE_MS);
+      // la bulle apparaît peu après que la pile s'est stabilisée
+      bubbleTimerRef.current = setTimeout(() => setBubbleVisible(true), BUBBLE_DELAY_MS);
 
-      runCycle();
-    }, HOLD_PAUSE);
+      timerRef.current = setTimeout(() => {
+        setBubbleVisible(false);
+        setOrder((prev) => {
+          setSwipingId(prev[0]);
+          return prev;
+        });
+
+        setTimeout(() => {
+          setOrder((prev) => [...prev.slice(1), prev[0]]);
+          setSwipingId(null);
+        }, SWIPE_MS);
+
+        runCycle();
+      }, BUBBLE_DELAY_MS + FRONT_HOLD_MS);
+    }, SWIPE_MS + SETTLE_MS);
   }, [paused]);
 
   useEffect(() => {
+    setBubbleVisible(false);
     runCycle();
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -80,21 +107,20 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Pile de photos qui swipent */}
+        {/* Pile de photos qui swipent, façon vidéo */}
         <div
-          className="relative h-[440px] w-[300px] shrink-0"
+          className="relative h-[460px] w-[300px] shrink-0"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
           {order.map((imgIndex, pos) => {
             const isFront = pos === 0;
             const isSwiping = swipingId === imgIndex;
+            const showBubble = isFront && bubbleVisible && !isSwiping;
 
-            // position dans la pile (0 = devant ... 4 = derrière)
             const depth = isSwiping ? 0 : pos;
             const baseRotate = ROT_JITTER[imgIndex];
             const stackRotate = depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
-
             const translateY = depth * 14;
             const scale = 1 - depth * 0.055;
 
@@ -116,29 +142,77 @@ export default function HomePage() {
                   willChange: "transform, opacity",
                 }}
               >
-                <img
-                  src={IMAGES[imgIndex]}
-                  alt={`Vêtement ${imgIndex + 1}`}
-                  className="h-full w-full rounded-3xl object-cover shadow-2xl ring-1 ring-black/5"
-                  draggable={false}
-                />
+                <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
+                  <img
+                    src={IMAGES[imgIndex]}
+                    alt={`Vêtement ${imgIndex + 1}`}
+                    className="h-full w-full object-cover"
+                    draggable={false}
+                  />
+                  {/* voile pour la lisibilité des éléments d'UI */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
 
-                {isFront && !isSwiping && (
-                  <div className="pointer-events-none absolute bottom-4 right-4 flex h-9 w-9 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md dark:bg-zinc-900/90 dark:text-zinc-200">
+                  {/* toggle décoratif en haut à gauche */}
+                  {isFront && (
+                    <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
+                      <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm transition-transform" />
+                    </div>
+                  )}
+
+                  {/* tags en bas à gauche */}
+                  {isFront && (
+                    <div className="absolute bottom-3 left-3 flex gap-1.5">
+                      {TAGS[imgIndex].map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-black/35 px-2 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* flèche de swipe en bas à droite */}
+                  {isFront && !isSwiping && (
+                    <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M7 17 17 7M9 7h8v8" />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* bulle verte qui glisse depuis la droite */}
+                  <div
+                    className="absolute bottom-5 right-0 flex max-w-[78%] items-center gap-2 rounded-2xl rounded-br-sm bg-gradient-to-br from-lime-500 to-green-600 px-4 py-3 shadow-xl transition-all duration-500 ease-out"
+                    style={{
+                      transform: showBubble ? "translateX(-12px)" : "translateX(115%)",
+                      opacity: showBubble ? 1 : 0,
+                    }}
+                  >
+                    <p className="text-sm font-bold leading-snug text-white">
+                      {CAPTIONS[imgIndex]}
+                    </p>
                     <svg
                       width="16"
                       height="16"
                       viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      fill="white"
+                      className="shrink-0"
                     >
-                      <path d="M7 17 17 7M9 7h8v8" />
+                      <path d="M12 21s-7.5-4.6-10-9C.5 8.5 2 4 6 4c2 0 3.5 1.2 4 2.4C10.5 5.2 12 4 14 4c4 0 5.5 4.5 4 8-2.5 4.4-10 9-10 9z" />
                     </svg>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
@@ -149,9 +223,7 @@ export default function HomePage() {
               <span
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-500 ${
-                  order[0] === i
-                    ? "w-5 bg-pink-500"
-                    : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                  order[0] === i ? "w-5 bg-pink-500" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
                 }`}
               />
             ))}
