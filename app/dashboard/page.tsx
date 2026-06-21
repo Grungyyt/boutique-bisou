@@ -19,6 +19,12 @@ const MODULES = [
     href: "/dashboard/manage/produit",
     emoji: "👕",
   },
+  {
+    title: "Gestion des tickets",
+    description: "Créer des types de tickets et gérer leur stock",
+    href: "/dashboard/manage/ticket",
+    emoji: "🎟️",
+  },
 ];
 
 export default function DashboardPage() {
