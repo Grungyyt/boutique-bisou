@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGIN_URL = "/auth/login";
 
 type Produit = {
   id: string;
@@ -31,11 +29,6 @@ export default function BoutiquePage() {
       setError(null);
       try {
         const res = await fetch(`${API_URL}/produits`, { credentials: "include" });
-
-        if (res.status === 401) {
-          window.location.href = LOGIN_URL;
-          return;
-        }
 
         if (!res.ok) {
           setError("Impossible de charger les articles.");
@@ -71,12 +64,12 @@ export default function BoutiquePage() {
       <div className="mx-auto max-w-6xl">
         {/* Retour à l'accueil */}
         <div className="mb-4">
-          <Link
+          <a
             href="/"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             ← Retour à l'accueil
-          </Link>
+          </a>
         </div>
 
         {/* Header */}
