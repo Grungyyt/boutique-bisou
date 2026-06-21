@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BisouData",
+  title: "BisouData -- By VTH Group",
   description: "Created By VTH Group",
 };
 
