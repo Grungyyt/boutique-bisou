@@ -28,7 +28,7 @@ export default function BoutiquePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_URL}/produits`, { credentials: "include" });
+        const res = await fetch(`${API_URL}/produits`);
 
         if (!res.ok) {
           setError("Impossible de charger les articles.");
