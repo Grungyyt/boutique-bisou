@@ -136,9 +136,10 @@ export default function BoutiquePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {resultats.map((p) => (
-              <div
+              <a
                 key={p.id}
-                className={`group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
+                href={`/boutique/view?id=${p.id}`}
+                className={`group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
                   p.quantite === 0 ? "opacity-60" : ""
                 }`}
               >
@@ -177,7 +178,7 @@ export default function BoutiquePage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}
