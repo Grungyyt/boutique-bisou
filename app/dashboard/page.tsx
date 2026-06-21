@@ -68,6 +68,17 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
       <div className="mx-auto max-w-5xl">
+        
+        {/* Bouton Retour à l'accueil */}
+        <div className="mb-6">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            ← Retour à l'accueil
+          </Link>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
             Tableau de bord
