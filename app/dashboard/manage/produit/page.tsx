@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
@@ -169,6 +170,16 @@ export default function ManageProduitPage() {
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
       <div className="mx-auto max-w-5xl">
+        {/* Retour vers le dashboard */}
+        <div className="mb-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          >
+            ← Retour au tableau de bord
+          </Link>
+        </div>
+
         {/* Header avec total à droite */}
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
