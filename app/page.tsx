@@ -68,12 +68,12 @@ export default function HomePage() {
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
         {/* Texte d'intro */}
         <div className="max-w-md text-center lg:text-left">
-          {/* Logo Bisou */}
+          {/* Logo Bisou - Agrandit ici avec h-20 */}
           <div className="mb-6 flex justify-center lg:justify-start">
             <img 
               src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png" 
               alt="Logo Boutique Bisou" 
-              className="h-12 w-auto object-contain"
+              className="h-20 w-auto object-contain"
             />
           </div>
           
