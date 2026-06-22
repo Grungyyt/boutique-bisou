@@ -25,6 +25,12 @@ const MODULES = [
     href: "/dashboard/manage/ticket",
     emoji: "🎟️",
   },
+  {
+    title: "Caisse",
+    description: "Encaisser un vêtement et retirer 1 du stock en un clic",
+    href: "/dashboard/manage/caisse",
+    emoji: "🛒",
+  },
 ];
 
 export default function DashboardPage() {
