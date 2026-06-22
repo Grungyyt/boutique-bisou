@@ -31,6 +31,12 @@ const MODULES = [
     href: "/dashboard/manage/caisse",
     emoji: "🛒",
   },
+  {
+    title: "Tracker",
+    description: "Historique complet des ventes, ajouts et toutes les actions",
+    href: "/dashboard/manage/tracker",
+    emoji: "📊",
+  },
 ];
 
 export default function DashboardPage() {
