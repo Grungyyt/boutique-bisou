@@ -159,7 +159,7 @@ export default function CaissePage() {
         {/* Header */}
         <div className="mb-2">
           <a
-            href="/dashboard/manage"
+            href="/dashboard"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             ← Retour
