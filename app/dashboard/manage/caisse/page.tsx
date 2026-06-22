@@ -66,6 +66,25 @@ export default function CaissePage() {
 
       if (!res.ok) throw new Error();
 
+      // Log de la vente
+      fetch(`${API_URL}/logs`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "vente",
+          produit_id: p.id,
+          produit_nom: p.nom,
+          details: JSON.stringify({
+            prix_tickets: p.prix_tickets,
+            stock_avant: p.quantite,
+            stock_apres: p.quantite - 1,
+            taille: p.taille,
+            couleur: p.couleur,
+          }),
+        }),
+      }).catch(() => {}); // silencieux si le log échoue
+
       // Mise à jour locale immédiate
       setProduits((prev) =>
         prev.map((x) =>
@@ -140,7 +159,7 @@ export default function CaissePage() {
         {/* Header */}
         <div className="mb-2">
           <a
-            href="/dashboard"
+            href="/dashboard/manage"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             ← Retour
