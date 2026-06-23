@@ -34,8 +34,19 @@ export default function RootLayout({
         </main>
 
         {/* Footer style Discord Ext */}
-        <footer className="w-full py-4 text-center text-xs text-neutral-400 bg-[#2b2d31] border-t border-[#1e1f22]">
-          <p>
+        <footer className="w-full py-6 flex flex-col items-center gap-3 bg-[#2b2d31] border-t border-[#1e1f22]">
+          {/* Bouton Soutenir le projet */}
+          <a
+            href="https://ko-fi.com/vth"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-medium text-white bg-[#5865F2] hover:bg-[#4752C4] rounded transition-colors duration-200 shadow-sm"
+          >
+            ☕ Soutenir le projet
+          </a>
+
+          {/* Mentions de copyright */}
+          <p className="text-xs text-neutral-400">
             Powered by{" "}
             <a 
               href="https://www.vth-mc.fr" 
