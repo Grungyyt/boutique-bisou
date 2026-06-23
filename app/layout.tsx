@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+CLIENT = Collège Pierre DuBois
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -54,7 +56,7 @@ export default function RootLayout({
               rel="noopener noreferrer"
               className="text-[#5865F2] font-semibold hover:underline"
             >
-              VTH Group
+              VTH Group 2026 - 2027 Tous droit Réservé Site Crée Pour {CLIENT}
             </a>
           </p>
         </footer>
