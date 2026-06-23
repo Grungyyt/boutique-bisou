@@ -65,6 +65,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-zinc-50 dark:bg-black">
+      {/* GIF fixe sur le côté gauche */}
+      <div className="fixed left-4 bottom-8 z-50 hidden lg:block">
+        <img
+          src="https://storage.vth-mc.fr/img/web/marche.gif"
+          alt="Support"
+          className="h-24 w-auto"
+        />
+      </div>
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
         {/* Texte d'intro */}
         <div className="max-w-md text-center lg:text-left">
