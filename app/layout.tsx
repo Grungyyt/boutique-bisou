@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-CLIENT = Collège Pierre DuBois
+// Correction ici : ajout de const et des guillemets
+const CLIENT = "Collège Pierre DuBois";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="fr" // Optionnel : changé en "fr" puisque ton site est en français
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#313338] text-white">
@@ -56,8 +57,9 @@ export default function RootLayout({
               rel="noopener noreferrer"
               className="text-[#5865F2] font-semibold hover:underline"
             >
-              VTH Group 2026 - 2027 Tous droit Réservé Site Crée Pour {CLIENT}
-            </a>
+              VTH Group 2026 - 2027 Tous droits réservés.
+            </a>{" "}
+            Site créé pour {CLIENT}
           </p>
         </footer>
       </body>
