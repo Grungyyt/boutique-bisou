@@ -119,7 +119,7 @@ export default function HomePage() {
                 alt=""
                 className="h-5 w-auto"
               />
-              Support
+              Soutenir
             </a>
           </div>
         </div>
