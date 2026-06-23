@@ -52,21 +52,21 @@ export default function RootLayout({
           {/* --- BLOC DE 3 BOUTONS CUSTOMIZABLES --- */}
           <div className="flex flex-wrap justify-center gap-3">
             <a
-              href="URL_DU_LIEN_1" // <-- Remplace par ton premier lien
+              href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/" // <-- Remplace par ton premier lien
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
             >
-              Mon Bouton 1
+              Contacter Collège Pierre DuBois
             </a>
 
             <a
-              href="URL_DU_LIEN_2" // <-- Remplace par ton deuxième lien
+              href="mailto:contact@vth-mc.fr" // <-- Remplace par ton deuxième lien
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
             >
-              Mon Bouton 2
+              Nous Contacter (VTH Group)
             </a>
 
             <a
