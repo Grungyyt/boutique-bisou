@@ -100,6 +100,19 @@ export default function HomePage() {
             >
               Tableau de bord
             </Link>
+            <a
+              href="https://ko-fi.com/vth"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            >
+              <img
+                src="https://storage.vth-mc.fr/img/web/marche.gif"
+                alt=""
+                className="h-5 w-auto"
+              />
+              Support
+            </a>
           </div>
         </div>
 
