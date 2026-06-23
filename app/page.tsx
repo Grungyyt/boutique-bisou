@@ -70,7 +70,7 @@ export default function HomePage() {
         <img
           src="https://storage.vth-mc.fr/img/web/marche.gif"
           alt="Support"
-          className="h-24 w-auto"
+          className="h-32 w-auto"
         />
       </div>
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
