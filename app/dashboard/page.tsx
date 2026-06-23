@@ -48,70 +48,64 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Intro video state
+  // Intro state
+  const [showIntro, setShowIntro] = useState(false);
+  const [waitingClick, setWaitingClick] = useState(false); // splash "cliquez pour lancer"
   const [videoIndex, setVideoIndex] = useState(0);
-  const [introVisible, setIntroVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Determine if we should show intro (once per session)
   useEffect(() => {
     const played = sessionStorage.getItem("bisou-intro-played");
     if (!played) {
-      setIntroVisible(true);
+      setShowIntro(true);
+      setWaitingClick(true);
     }
   }, []);
 
-  // Auto-play video when visible or when index changes
-  useEffect(() => {
-    if (introVisible && videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(() => {
-        // Autoplay bloqué — on skip direct
-        handleVideoEnd();
-      });
-    }
-  }, [introVisible, videoIndex]);
+  // Lance la vidéo après le clic utilisateur (nécessaire pour le son)
+  const handleStartClick = () => {
+    setWaitingClick(false);
+    // Le rendu de la vidéo va se faire, on joue dans le prochain tick
+    setTimeout(() => {
+      videoRef.current?.play().catch(() => dismiss());
+    }, 50);
+  };
 
+  // Quand une vidéo se termine, passer à la suivante ou fermer
   const handleVideoEnd = () => {
     if (videoIndex < STARTUP_VIDEOS.length - 1) {
       setVideoIndex((i) => i + 1);
     } else {
-      // Dernière vidéo terminée → fade out
-      setFadingOut(true);
-      setTimeout(() => {
-        setIntroVisible(false);
-        sessionStorage.setItem("bisou-intro-played", "1");
-      }, 600);
+      dismiss();
     }
   };
 
-  const skipIntro = () => {
+  // Joue la vidéo suivante dès que l'index change (et qu'on n'est plus en splash)
+  useEffect(() => {
+    if (!waitingClick && showIntro && videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => dismiss());
+    }
+  }, [videoIndex]);
+
+  const dismiss = () => {
     setFadingOut(true);
     setTimeout(() => {
-      setIntroVisible(false);
+      setShowIntro(false);
       sessionStorage.setItem("bisou-intro-played", "1");
-    }, 400);
+    }, 600);
   };
 
+  // Stats fetch
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
       setError(null);
       try {
         const res = await fetch(`${API_URL}/produits`, { credentials: "include" });
-
-        if (res.status === 401) {
-          window.location.href = LOGIN_URL;
-          return;
-        }
-
-        if (!res.ok) {
-          setError("Impossible de charger les statistiques.");
-          setLoading(false);
-          return;
-        }
-
+        if (res.status === 401) { window.location.href = LOGIN_URL; return; }
+        if (!res.ok) { setError("Impossible de charger les statistiques."); setLoading(false); return; }
         const data = await res.json();
         setStats({
           totalProduits: data.total ?? (data.produits?.length || 0),
@@ -123,14 +117,13 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
 
   return (
     <>
-      {/* ── Intro vidéo plein écran ── */}
-      {introVisible && (
+      {/* ── Intro plein écran ── */}
+      {showIntro && (
         <div
           style={{
             position: "fixed",
@@ -144,61 +137,100 @@ export default function DashboardPage() {
             opacity: fadingOut ? 0 : 1,
           }}
         >
-          <video
-            ref={videoRef}
-            key={videoIndex}
-            onEnded={handleVideoEnd}
-            muted
-            playsInline
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          >
-            <source src={STARTUP_VIDEOS[videoIndex]} type="video/mp4" />
-          </video>
-
-          {/* Indicateur de progression */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 24,
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              gap: 8,
-            }}
-          >
-            {STARTUP_VIDEOS.map((_, i) => (
+          {/* Splash "clic pour lancer" — affiché avant la première interaction */}
+          {waitingClick ? (
+            <button
+              onClick={handleStartClick}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 20,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "#fff",
+              }}
+            >
+              {/* Icône play */}
               <div
-                key={i}
                 style={{
-                  width: 8,
-                  height: 8,
+                  width: 80,
+                  height: 80,
                   borderRadius: "50%",
-                  backgroundColor: i === videoIndex ? "#fff" : "rgba(255,255,255,0.35)",
-                  transition: "background-color 0.3s",
+                  border: "2px solid rgba(255,255,255,0.6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 32,
+                  backdropFilter: "blur(4px)",
+                  background: "rgba(255,255,255,0.08)",
                 }}
-              />
-            ))}
-          </div>
+              >
+                ▶
+              </div>
+              <span style={{ fontSize: 15, opacity: 0.7, letterSpacing: "0.05em" }}>
+                Cliquez pour lancer
+              </span>
+            </button>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                key={videoIndex}
+                onEnded={handleVideoEnd}
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              >
+                <source src={STARTUP_VIDEOS[videoIndex]} type="video/mp4" />
+              </video>
 
-          {/* Bouton skip */}
-          <button
-            onClick={skipIntro}
-            style={{
-              position: "absolute",
-              top: 20,
-              right: 24,
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              color: "#fff",
-              padding: "6px 14px",
-              borderRadius: 8,
-              fontSize: 13,
-              cursor: "pointer",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            Passer →
-          </button>
+              {/* Points de progression */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 24,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  gap: 8,
+                }}
+              >
+                {STARTUP_VIDEOS.map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      backgroundColor: i === videoIndex ? "#fff" : "rgba(255,255,255,0.3)",
+                      transition: "background-color 0.3s",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Bouton passer */}
+              <button
+                onClick={dismiss}
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  right: 24,
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  color: "#fff",
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  backdropFilter: "blur(6px)",
+                }}
+              >
+                Passer →
+              </button>
+            </>
+          )}
         </div>
       )}
 
