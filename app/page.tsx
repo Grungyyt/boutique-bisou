@@ -76,7 +76,7 @@ export default function HomePage() {
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
         {/* Texte d'intro */}
         <div className="max-w-md text-center lg:text-left">
-          {/* Logo Bisou - Agrandit ici avec h-32 */}
+          {/* Logo Bisou */}
           <div className="mb-8 flex justify-center lg:justify-start">
             <img
               src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
@@ -103,6 +103,12 @@ export default function HomePage() {
               Voir les articles
             </Link>
             <Link
+              href="/equipe"
+              className="inline-block rounded-lg border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            >
+              Voir l'Équipe
+            </Link>
+            <Link
               href="/dashboard"
               className="inline-block rounded-lg border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
             >
@@ -124,7 +130,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Pile de photos qui swipent, façon vidéo */}
+        {/* Pile de photos qui swipent */}
         <div
           className="relative h-[580px] w-[380px] shrink-0 sm:h-[580px] sm:w-[380px]"
           onMouseEnter={() => setPaused(true)}
@@ -166,17 +172,14 @@ export default function HomePage() {
                     className="h-full w-full object-cover"
                     draggable={false}
                   />
-                  {/* voile pour la lisibilité des éléments d'UI */}
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
 
-                  {/* toggle décoratif en haut à gauche */}
                   {isFront && (
                     <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
                       <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm" />
                     </div>
                   )}
 
-                  {/* tags en bas à gauche */}
                   {isFront && (
                     <div className="absolute bottom-3 left-3 flex gap-1.5">
                       {TAGS[imgIndex].map((tag) => (
@@ -190,7 +193,6 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* flèche de swipe en bas à droite */}
                   {isFront && !isSwiping && (
                     <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
                       <svg
@@ -212,7 +214,6 @@ export default function HomePage() {
             );
           })}
 
-          {/* Indicateurs de progression */}
           <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
             {IMAGES.map((_, i) => (
               <span
