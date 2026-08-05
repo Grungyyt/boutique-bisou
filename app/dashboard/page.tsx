@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
@@ -44,72 +43,121 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // État pour l'écran de chargement initial de 4 secondes
+  // Écran de chargement
   const [showSplash, setShowSplash] = useState(true);
+  
+  // Suivi des requêtes HTTP pour l'UI
+  const [currentRequest, setCurrentRequest] = useState<string | null>(null);
+  const [failedRequest, setFailedRequest] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 4000);
+    let isMounted = true;
+    const startTime = Date.now();
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Fetch des statistiques
-  useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
       setError(null);
+      setFailedRequest(null);
+
+      const requestUrl = `${API_URL}/produits`;
+      setCurrentRequest(requestUrl);
+
       try {
-        const res = await fetch(`${API_URL}/produits`, { credentials: "include" });
+        const res = await fetch(requestUrl, { credentials: "include" });
+        
         if (res.status === 401) {
           window.location.href = LOGIN_URL;
           return;
         }
+
         if (!res.ok) {
-          setError("Impossible de charger les statistiques.");
-          setLoading(false);
-          return;
+          throw new Error(`Erreur HTTP: ${res.status}`);
         }
+
         const data = await res.json();
-        setStats({
-          totalProduits: data.total ?? (data.produits?.length || 0),
-          totalTickets: data.total_tickets || 0,
-        });
-      } catch {
-        setError("Impossible de contacter le serveur.");
+        
+        if (isMounted) {
+          setStats({
+            totalProduits: data.total ?? (data.produits?.length || 0),
+            totalTickets: data.total_tickets || 0,
+          });
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError("Impossible de charger les statistiques.");
+          setFailedRequest(requestUrl);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setCurrentRequest(null);
+          setLoading(false);
+
+          // Calcul pour s'assurer que le splash screen dure au moins 4 secondes
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, 4000 - elapsedTime);
+
+          setTimeout(() => {
+            if (isMounted) {
+              setShowSplash(false);
+            }
+          }, remainingTime);
+        }
       }
     };
 
     fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <>
-      {/* ── Écran de chargement (4 secondes) ── */}
+      {/* ── Écran de chargement ── */}
       {showSplash && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-white py-12">
-          {/* Div vide pour équilibrer le flexbox et centrer le texte */}
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-white p-6 md:p-12">
+          {/* Haut : vide pour l'alignement */}
           <div />
 
-          {/* Animation + Texte au centre */}
+          {/* Centre : Spinner + Texte */}
           <div className="flex flex-col items-center gap-4 text-zinc-800">
-            {/* Spinner animé */}
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
             <p className="animate-pulse text-lg font-medium">
               Chargement en cours...
             </p>
           </div>
 
-          {/* Logo en bas */}
-          <div className="flex items-center justify-center">
-            <img
-              src="https://storage.vth-mc.fr/vth.png"
-              alt="Logo VTH"
-              className="h-12 w-auto object-contain"
-            />
+          {/* Bas : Infos requêtes et Logo */}
+          <div className="relative flex w-full items-end justify-between">
+            {/* Bas à gauche : Requête actuelle */}
+            <div className="max-w-xs text-xs text-zinc-500">
+              {currentRequest ? (
+                <p className="truncate">
+                  <span className="font-semibold text-zinc-700">Chargement :</span> {currentRequest}
+                </p>
+              ) : (
+                <p className="text-zinc-400">Toutes les requêtes sont terminées</p>
+              )}
+            </div>
+
+            {/* Centre bas : Logo */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <img
+                src="https://storage.vth-mc.fr/vth.png"
+                alt="Logo VTH"
+                className="h-10 w-auto object-contain md:h-12"
+              />
+            </div>
+
+            {/* Bas à droite : Erreur si une requête échoue */}
+            <div className="max-w-xs text-right text-xs">
+              {failedRequest && (
+                <p className="truncate font-medium text-rose-600">
+                  ⚠️ Échec : {failedRequest}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
