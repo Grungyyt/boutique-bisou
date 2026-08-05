@@ -151,7 +151,7 @@ export default function DashboardPage() {
               <img
                 src="https://storage.vth-mc.fr/vth.png"
                 alt="Logo VTH"
-                className="h-80 w-auto object-contain md:h-80"
+                className="h-60 w-auto object-contain md:h-60"
               />
             </div>
 
