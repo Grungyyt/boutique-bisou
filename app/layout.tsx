@@ -37,7 +37,7 @@ export default function RootLayout({
         </main>
 
         {/* Footer */}
-        <footer className="w-full py-6 flex flex-col items-center gap-4 bg-[#2b2d31] border-t border-[#1e1f22]">
+        <footer className="w-full py-6 flex flex-col items-center gap-4 bg-[#2b2d31] border-t border-[#1e1f22] px-4">
           
           {/* Bouton Principal (Soutenir) */}
           <a
@@ -49,7 +49,7 @@ export default function RootLayout({
             ☕ Soutenir le projet
           </a>
 
-          {/* --- BLOC DE 3 BOUTONS CUSTOMIZABLES --- */}
+          {/* --- BOUTONS D'ACTION --- */}
           <div className="flex flex-wrap justify-center gap-3">
             <a
               href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/"
@@ -68,17 +68,20 @@ export default function RootLayout({
             >
               Nous Contacter (VTH Group)
             </a>
-
-            <a
-              href="https://pdubois.lamayenne.e-lyco.fr/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
-            >
-              Site du Collège Pierre Dubois. Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous.
-            </a>
           </div>
-          {/* -------------------------------------- */}
+
+          {/* Texte explicatif (non-bouton) avec lien vers le site */}
+          <p className="text-xs text-neutral-400 text-center max-w-2xl my-1">
+            <a 
+              href="https://pdubois.lamayenne.e-lyco.fr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:text-white"
+            >
+              Site du Collège Pierre Dubois
+            </a>
+            . Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous.
+          </p>
 
           {/* Mentions de copyright */}
           <div className="text-center">
@@ -94,12 +97,12 @@ export default function RootLayout({
               </a>
             </p>
 
-            {/* Nouveau texte ajouté au-dessus du Collège Pierre Dubois */}
+            {/* Message pour les crédits */}
             <p className="text-xs text-neutral-400 mt-2">
               Un problème de crédits ? Contactez-nous par e-mail :{" "}
               <a 
                 href="mailto:contact@vth-mc.fr" 
-                className="text-white hover:underline"
+                className="text-white hover:underline font-medium"
               >
                 contact@vth-mc.fr
               </a>
