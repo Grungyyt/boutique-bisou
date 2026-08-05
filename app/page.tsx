@@ -66,25 +66,25 @@ export default function HomePage() {
   return (
     <div className="min-h-screen overflow-hidden bg-zinc-50 dark:bg-black">
       {/* GIF fixe sur le côté gauche */}
-      <div className="fixed left-4 bottom-8 z-50 hidden lg:block">
+      <div className="fixed bottom-8 left-4 z-50 hidden lg:block">
         <img
           src="https://storage.vth-mc.fr/img/web/marche.gif"
           alt="Support"
           className="h-32 w-auto"
         />
       </div>
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center gap-10 px-6 py-16 lg:flex-row lg:gap-20">
         {/* Texte d'intro */}
         <div className="max-w-md text-center lg:text-left">
           {/* Logo Bisou - Agrandit ici avec h-32 */}
           <div className="mb-8 flex justify-center lg:justify-start">
-            <img 
-              src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png" 
-              alt="Logo Boutique Bisou" 
+            <img
+              src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+              alt="Logo Boutique Bisou"
               className="h-32 w-auto object-contain"
             />
           </div>
-          
+
           <span className="mb-4 inline-block rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
             Boutique Bisou
           </span>
@@ -126,7 +126,7 @@ export default function HomePage() {
 
         {/* Pile de photos qui swipent, façon vidéo */}
         <div
-          className="relative h-[460px] w-[300px] shrink-0"
+          className="relative h-[580px] w-[380px] shrink-0 sm:h-[580px] sm:w-[380px]"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -136,7 +136,8 @@ export default function HomePage() {
 
             const depth = isSwiping ? 0 : pos;
             const baseRotate = ROT_JITTER[imgIndex];
-            const stackRotate = depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
+            const stackRotate =
+              depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
             const translateY = depth * 14;
             const scale = 1 - depth * 0.055;
 
@@ -217,7 +218,9 @@ export default function HomePage() {
               <span
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-500 ${
-                  order[0] === i ? "w-5 bg-pink-500" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                  order[0] === i
+                    ? "w-5 bg-pink-500"
+                    : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
                 }`}
               />
             ))}
