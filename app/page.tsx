@@ -14,11 +14,11 @@ const IMAGES = [
 
 // Tags affichés en bas à gauche de chaque carte (comme les pastilles de la vidéo).
 const TAGS: [string, string][] = [
-  ["BOUTIQUE BISOU", "PIÈCE 01"],
-  ["BOUTIQUE BISOU", "PIÈCE 02"],
-  ["BOUTIQUE BISOU", "PIÈCE 03"],
-  ["BOUTIQUE BISOU", "PIÈCE 04"],
-  ["BOUTIQUE BISOU", "PIÈCE 05"],
+  ["BOUTIQUE BISOU", "Ouverture 2025 2026"],
+  ["BOUTIQUE BISOU", "Dans la boutique"],
+  ["BOUTIQUE BISOU", "Décoration"],
+  ["BOUTIQUE BISOU", "Discussions pendant l'ouverture"],
+  ["BOUTIQUE BISOU", "Ouverture avec Les Medias"],
 ];
 
 const ROT_JITTER = [0, -6, 5, -4, 7];
