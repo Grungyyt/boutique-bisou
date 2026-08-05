@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // Variable CLIENT corrigée
-const CLIENT = "Collège Pierre DuBois";
+const CLIENT = "Collège Pierre Dubois";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,16 +52,16 @@ export default function RootLayout({
           {/* --- BLOC DE 3 BOUTONS CUSTOMIZABLES --- */}
           <div className="flex flex-wrap justify-center gap-3">
             <a
-              href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/" // <-- Remplace par ton premier lien
+              href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
             >
-              Contacter Collège Pierre DuBois
+              Contacter le Collège Pierre Dubois
             </a>
 
             <a
-              href="mailto:contact@vth-mc.fr" // <-- Remplace par ton deuxième lien
+              href="mailto:contact@vth-mc.fr"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
@@ -70,12 +70,12 @@ export default function RootLayout({
             </a>
 
             <a
-              href="https://pdubois.lamayenne.e-lyco.fr/" // <-- Remplace par ton troisième lien
+              href="https://pdubois.lamayenne.e-lyco.fr/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-1.5 text-xs font-medium text-white bg-[#4f545c] hover:bg-[#686d73] rounded transition-colors duration-200"
             >
-              Site Collège Pierre DuBois
+              Site du Collège Pierre Dubois. Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous.
             </a>
           </div>
           {/* -------------------------------------- */}
@@ -90,9 +90,21 @@ export default function RootLayout({
                 rel="noopener noreferrer"
                 className="text-[#5865F2] font-semibold hover:underline"
               >
-                VTH Group 2026 - 2027 Tous droits réservés.
+                ©️ VTH Group 2026 - 2027 Tous droits réservés.
               </a>
             </p>
+
+            {/* Nouveau texte ajouté au-dessus du Collège Pierre Dubois */}
+            <p className="text-xs text-neutral-400 mt-2">
+              Un problème de crédits ? Contactez-nous par e-mail :{" "}
+              <a 
+                href="mailto:contact@vth-mc.fr" 
+                className="text-white hover:underline"
+              >
+                contact@vth-mc.fr
+              </a>
+            </p>
+
             <p className="text-xs text-neutral-400 mt-1">
               Site créé pour <span className="text-white font-medium">{CLIENT}</span>
             </p>
