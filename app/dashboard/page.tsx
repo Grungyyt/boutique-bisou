@@ -43,16 +43,23 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Écran de chargement
-  const [showSplash, setShowSplash] = useState(true);
+  // Gestion de l'écran de chargement via sessionStorage
+  const [showSplash, setShowSplash] = useState(false);
   
-  // Suivi des requêtes HTTP pour l'UI
+  // Suivi des requêtes HTTP
   const [currentRequest, setCurrentRequest] = useState<string | null>(null);
   const [failedRequest, setFailedRequest] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const startTime = Date.now();
+
+    // Vérification de sessionStorage pour savoir si le splash screen a déjà été vu
+    const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
+
+    if (!hasSeenSplash) {
+      setShowSplash(true);
+    }
 
     const fetchStats = async () => {
       setLoading(true);
@@ -92,15 +99,18 @@ export default function DashboardPage() {
           setCurrentRequest(null);
           setLoading(false);
 
-          // Calcul pour s'assurer que le splash screen dure au moins 4 secondes
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, 4000 - elapsedTime);
+          if (!hasSeenSplash) {
+            // S'assure que le splash dure au moins 4 secondes pour le premier affichage
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, 4000 - elapsedTime);
 
-          setTimeout(() => {
-            if (isMounted) {
-              setShowSplash(false);
-            }
-          }, remainingTime);
+            setTimeout(() => {
+              if (isMounted) {
+                setShowSplash(false);
+                sessionStorage.setItem("dashboard_splash_seen", "true");
+              }
+            }, remainingTime);
+          }
         }
       }
     };
@@ -114,13 +124,11 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* ── Écran de chargement ── */}
+      {/* ── Écran de chargement (uniquement lors de la première visite de la session) ── */}
       {showSplash && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-white p-6 md:p-12">
-          {/* Haut : vide pour l'alignement */}
           <div />
 
-          {/* Centre : Spinner + Texte */}
           <div className="flex flex-col items-center gap-4 text-zinc-800">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
             <p className="animate-pulse text-lg font-medium">
@@ -128,9 +136,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Bas : Infos requêtes et Logo */}
           <div className="relative flex w-full items-end justify-between">
-            {/* Bas à gauche : Requête actuelle */}
             <div className="max-w-xs text-xs text-zinc-500">
               {currentRequest ? (
                 <p className="truncate">
@@ -141,16 +147,14 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Centre bas : Logo */}
             <div className="absolute left-1/2 -translate-x-1/2">
               <img
                 src="https://storage.vth-mc.fr/vth.png"
                 alt="Logo VTH"
-                className="h-10 w-auto object-contain md:h-12"
+                className="h-80 w-auto object-contain md:h-80"
               />
             </div>
 
-            {/* Bas à droite : Erreur si une requête échoue */}
             <div className="max-w-xs text-right text-xs">
               {failedRequest && (
                 <p className="truncate font-medium text-rose-600">
