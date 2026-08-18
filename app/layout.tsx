@@ -80,7 +80,7 @@ export default function RootLayout({
             >
               Site du Collège Pierre Dubois
             </a>
-            . Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous.
+            . Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous. (Interviever by Chicken News)
           </p>
 
           {/* Mentions de copyright */}
