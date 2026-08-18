@@ -22,6 +22,7 @@ export default function BoutiquePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [reservingId, setReservingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProduits = async () => {
@@ -59,6 +60,34 @@ export default function BoutiquePage() {
     );
   }, [produits, search]);
 
+  const handleReserve = async (produitId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (reservingId) return;
+    setReservingId(produitId);
+
+    try {
+      const res = await fetch(`${API_URL}/reservations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ produit_id: produitId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else {
+        alert(data.detail || "Erreur lors de la réservation.");
+        setReservingId(null);
+      }
+    } catch {
+      alert("Impossible de contacter le serveur pour effectuer la réservation.");
+      setReservingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
       <div className="mx-auto max-w-6xl">
@@ -78,7 +107,7 @@ export default function BoutiquePage() {
             La boutique
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Tous les articles disponibles, en un coup d'œil
+            Tous les articles disponibles, réservables en 1 clic
           </p>
         </div>
 
@@ -120,6 +149,7 @@ export default function BoutiquePage() {
         )}
 
         {/* Grille des articles */}
+        {}
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -136,49 +166,67 @@ export default function BoutiquePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {resultats.map((p) => (
-              <a
+              <div
                 key={p.id}
-                href={`/boutique/view?id=${p.id}`}
-                className={`group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
+                className={`group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
                   p.quantite === 0 ? "opacity-60" : ""
                 }`}
               >
-                <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                  {p.photo_url ? (
-                    <img
-                      src={p.photo_url}
-                      alt={p.nom}
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
-                      Pas de photo
-                    </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                    {p.nom}
-                  </p>
-                  <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                    {p.type} · {p.genre} · {p.taille}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-pink-600 dark:text-pink-400">
-                      {p.prix_tickets} 🎟️
-                    </span>
-                    {p.quantite === 0 ? (
-                      <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
-                        Rupture
-                      </span>
+                <div>
+                  <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                    {p.photo_url ? (
+                      <img
+                        src={p.photo_url}
+                        alt={p.nom}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
                     ) : (
-                      <span className="text-[11px] text-zinc-400">
-                        {p.quantite} en stock
-                      </span>
+                      <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
+                        Pas de photo
+                      </div>
                     )}
                   </div>
+                  <div className="p-3">
+                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                      {p.nom}
+                    </p>
+                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      {p.type} · {p.genre} · {p.taille}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-pink-600 dark:text-pink-400">
+                        {p.prix_tickets} 🎟️
+                      </span>
+                      {p.quantite === 0 ? (
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                          Rupture
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-zinc-400">
+                          {p.quantite} en stock
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </a>
+
+                {/* Bouton de réservation */}
+                {}
+                <div className="p-3 pt-0">
+                  <button
+                    type="button"
+                    disabled={p.quantite <= 0 || reservingId === p.id}
+                    onClick={(e) => handleReserve(p.id, e)}
+                    className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 py-2 text-xs font-bold text-white shadow transition hover:opacity-95 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {reservingId === p.id
+                      ? "Réservation..."
+                      : p.quantite <= 0
+                      ? "Indisponible"
+                      : "Réserver ce vêtement 📌"}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
