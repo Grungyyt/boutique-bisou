@@ -151,7 +151,7 @@ export default function HomePage() {
                 Voir l'Équipe
               </a>
               <a
-                href="/dashboard"
+                href="/verif"
                 className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
               >
                 Tableau de bord
