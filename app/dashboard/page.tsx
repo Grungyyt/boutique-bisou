@@ -149,7 +149,7 @@ export default function DashboardPage() {
 
             <div className="absolute left-1/2 -translate-x-1/2">
               <img
-                src="https://storage.vth-mc.fr/vth.png"
+                src="https://storage.vth-mc.fr/vth-b.png"
                 alt="Logo VTH"
                 className="h-60 w-auto object-contain md:h-60"
               />
