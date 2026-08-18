@@ -19,6 +19,12 @@ const MODULES = [
     emoji: "👕",
   },
   {
+    title: "Réservations",
+    description: "Consulter les numéros à 6 chiffres des réservations en cours",
+    href: "/dashboard/manage/reservations",
+    emoji: "📌",
+  },
+  {
     title: "Gestion des tickets",
     description: "Créer des types de tickets et gérer leur stock",
     href: "/dashboard/manage/ticket",
@@ -42,19 +48,13 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Gestion de l'écran de chargement via sessionStorage
   const [showSplash, setShowSplash] = useState(false);
-  
-  // Suivi des requêtes HTTP
   const [currentRequest, setCurrentRequest] = useState<string | null>(null);
   const [failedRequest, setFailedRequest] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const startTime = Date.now();
-
-    // Vérification de sessionStorage pour savoir si le splash screen a déjà été vu
     const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
 
     if (!hasSeenSplash) {
@@ -100,7 +100,6 @@ export default function DashboardPage() {
           setLoading(false);
 
           if (!hasSeenSplash) {
-            // S'assure que le splash dure au moins 4 secondes pour le premier affichage
             const elapsedTime = Date.now() - startTime;
             const remainingTime = Math.max(0, 4000 - elapsedTime);
 
@@ -124,7 +123,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* ── Écran de chargement (uniquement lors de la première visite de la session) ── */}
       {showSplash && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-white p-6 md:p-12">
           <div />
@@ -167,6 +165,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Dashboard ── */}
+      {}
       <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
         <div className="mx-auto max-w-5xl">
           <div className="mb-6">
