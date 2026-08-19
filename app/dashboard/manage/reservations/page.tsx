@@ -31,14 +31,14 @@ export default function DashboardPage() {
 
     const user = JSON.parse(rawUser);
 
-    # Vérification strict du statut administrateur
+    // Vérification strict du statut administrateur
     if (!user.is_admin) {
       alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
       router.push("/boutique");
       return;
     }
 
-    # Charger les réservations pour les admins
+    // Charger les réservations pour les admins
     fetch(`${API_URL}/admin/reservations?user_id=${user.id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Erreur d'accès aux réservations admin");
