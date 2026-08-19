@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
@@ -25,7 +25,6 @@ export default function AdminReservationsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>("");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -49,37 +48,6 @@ export default function AdminReservationsPage() {
 
     fetchReservations();
   }, []);
-
-  const handleMarkAsSold = async (id: string) => {
-    setUpdatingId(id);
-    try {
-      const res = await fetch(`${API_URL}/reservations/${id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ status: "vendue" }),
-      });
-
-      if (res.status === 401) {
-        window.location.href = "/auth/login";
-        return;
-      }
-
-      if (!res.ok) {
-        throw new Error("Erreur lors de la mise à jour du statut.");
-      }
-
-      setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: "vendue" } : r))
-      );
-    } catch (err: any) {
-      alert(err.message || "Impossible de mettre à jour la réservation.");
-    } finally {
-      setUpdatingId(null);
-    }
-  };
 
   const filtered = reservations.filter((r) => {
     const q = search.trim().toLowerCase();
@@ -130,6 +98,7 @@ export default function AdminReservationsPage() {
           </p>
         )}
 
+        {}
         {loading ? (
           <div className="py-12 text-center text-zinc-400 text-xs">
             Chargement des réservations...
@@ -140,79 +109,59 @@ export default function AdminReservationsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((r) => {
-              const isSold = r.status.toLowerCase() === "vendue";
-              return (
-                <div
-                  key={r.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <div className="flex items-center gap-4">
-                    {/* Photo */}
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
-                      {r.produit_photo ? (
-                        <img
-                          src={r.produit_photo}
-                          alt={r.produit_nom}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-400">
-                          Pas de photo
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Infos Vêtement */}
-                    <div>
-                      <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-50">
-                        {r.produit_nom}
-                      </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {r.produit_type} · {r.produit_taille} · {r.produit_couleur}
-                      </p>
-                      <p className="mt-1 text-xs font-bold text-pink-600 dark:text-pink-400">
-                        Prix : {r.prix_tickets} ticket(s) 🎟️
-                      </p>
-                    </div>
+            {filtered.map((r) => (
+              <div
+                key={r.id}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Photo */}
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                    {r.produit_photo ? (
+                      <img
+                        src={r.produit_photo}
+                        alt={r.produit_nom}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-400">
+                        Pas de photo
+                      </div>
+                    )}
                   </div>
 
-                  {/* Code, Statut & Action */}
-                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-100 dark:border-zinc-800">
-                    <div className="text-right">
-                      <p className="text-[10px] uppercase font-bold text-zinc-400">
-                        Numéro à présenter
-                      </p>
-                      <span className="text-2xl font-black font-mono tracking-wider text-pink-600 dark:text-pink-400">
-                        #{r.code_6_chiffres}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${
-                          isSold
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                            : "bg-pink-100 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300"
-                        }`}
-                      >
-                        {r.status || "Réservé"}
-                      </span>
-
-                      {!isSold && (
-                        <button
-                          onClick={() => handleMarkAsSold(r.id)}
-                          disabled={updatingId === r.id}
-                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-emerald-700 disabled:opacity-50"
-                        >
-                          {updatingId === r.id ? "Mise à jour..." : "✓ Marquer vendue"}
-                        </button>
-                      )}
-                    </div>
+                  {/* Infos Vêtement */}
+                  <div>
+                    <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-50">
+                      {r.produit_nom}
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {r.produit_type} · {r.produit_taille} · {r.produit_couleur}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-pink-600 dark:text-pink-400">
+                      Prix : {r.prix_tickets} ticket(s) 🎟️
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Code & Statut */}
+                {}
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-100 dark:border-zinc-800">
+                  <div className="text-right">
+                    <p className="text-[10px] uppercase font-bold text-zinc-400">
+                      Numéro à présenter
+                    </p>
+                    <span className="text-2xl font-black font-mono tracking-wider text-pink-600 dark:text-pink-400">
+                      #{r.code_6_chiffres}
+                    </span>
+                  </div>
+
+                  <span className="rounded-full bg-pink-100 dark:bg-pink-950/50 px-3 py-1 text-xs font-bold text-pink-700 dark:text-pink-300">
+                    {r.status || "Réservé"}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
