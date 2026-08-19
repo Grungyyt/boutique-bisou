@@ -1,68 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// Structure complète des articles de vêtements (T-Shirts)
-const ARTICLES = [
-  {
-    id: 1,
-    title: "T-Shirt Bisou - Édition Ouverture",
-    category: "T-Shirt",
-    price: "1 Ticket",
-    description: "T-shirt collector sélectionné pour l'ouverture 2025-2026.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
-    tags: ["BOUTIQUE BISOU", "Ouverture"],
-    status: "Disponible",
-  },
-  {
-    id: 2,
-    title: "T-Shirt Bisou - Dans la Boutique",
-    category: "T-Shirt",
-    price: "2 Tickets",
-    description: "Pièce unique choisie avec cœur, disponible en boutique.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
-    tags: ["BOUTIQUE BISOU", "Boutique"],
-    status: "Disponible",
-  },
-  {
-    id: 3,
-    title: "T-Shirt Bisou - Motif Déco",
-    category: "T-Shirt",
-    price: "1 Ticket",
-    description: "Design inspiré de la décoration originale de notre boutique.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
-    tags: ["BOUTIQUE BISOU", "Décoration"],
-    status: "Disponible",
-  },
-  {
-    id: 4,
-    title: "T-Shirt Bisou - Event Discussion",
-    category: "T-Shirt",
-    price: "3 Tickets",
-    description: "Porté lors des sessions d'échange pendant l'ouverture.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
-    tags: ["BOUTIQUE BISOU", "Événement"],
-    status: "Disponible",
-  },
-  {
-    id: 5,
-    title: "T-Shirt Bisou - Édition Médias",
-    category: "T-Shirt",
-    price: "2 Tickets",
-    description: "Édition limitée mise en avant lors du passage des médias.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
-    tags: ["BOUTIQUE BISOU", "Les Médias"],
-    status: "Édition Limitée",
-  },
-];
+// Interface TypeScript basée sur le retour de votre API
+interface Produit {
+  id: string;
+  nom: string;
+  couleur: string;
+  type: string;
+  genre: string;
+  taille: string;
+  prix_tickets: number;
+  created_at: string;
+  photo_url: string;
+  quantite: number;
+}
 
 export default function HomePage() {
+  // États pour les produits récupérés via l'API
+  const [produits, setProduits] = useState<Produit[]>([]);
+  const [loadingProduits, setLoadingProduits] = useState(true);
+
   // Inscription Newsletter
   const [email, setEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState<"success" | "error" | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 1. Récupération des articles depuis l'API
+  useEffect(() => {
+    const fetchProduits = async () => {
+      try {
+        const res = await fetch("https://api.boutique-bisou.vth-mc.fr/produits");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.produits && Array.isArray(data.produits)) {
+            setProduits(data.produits);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des produits :", error);
+      } finally {
+        setLoadingProduits(false);
+      }
+    };
+
+    fetchProduits();
+  }, []);
+
+  // Gestion de la newsletter
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || isSubmitting) return;
@@ -98,12 +84,18 @@ export default function HomePage() {
     }
   };
 
-  // Duplication des articles pour créer une boucle infinie parfaite
-  const MARQUEE_ARTICLES = [...ARTICLES, ...ARTICLES];
+  // Duplication de la liste d'articles pour assurer un défilement infini et fluide
+  // On duplique plusieurs fois si le nombre d'articles est réduit
+  const displayProduits =
+    produits.length > 0
+      ? produits.length < 5
+        ? [...produits, ...produits, ...produits, ...produits]
+        : [...produits, ...produits]
+      : [];
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
-      {/* Styles CSS pour l'animation du marquee façon Modrinth et pause au survol */}
+      {/* Styles CSS pour l'animation du marquee et la pause au survol */}
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -116,7 +108,7 @@ export default function HomePage() {
         .animate-marquee {
           display: flex;
           width: max-content;
-          animation: marquee 28s linear infinite;
+          animation: marquee 30s linear infinite;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
@@ -188,76 +180,101 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- SECTION DÉFILANTE D'ARTICLES (MARQUEE TYPE MODRINTH) --- */}
+        {/* --- SECTION DÉFILANTE DES ARTICLES (API) --- */}
         <div className="relative w-full overflow-hidden py-4">
-          {/* Degradés sur les bords pour l'effet de fondu */}
-          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-20 bg-gradient-to-r from-zinc-50 to-transparent dark:from-black" />
-          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-20 bg-gradient-to-l from-zinc-50 to-transparent dark:from-black" />
+          {/* Dégradés sur les bords pour un effet fondu de qualité */}
+          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-16 bg-gradient-to-r from-zinc-50 to-transparent dark:from-black" />
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-16 bg-gradient-to-l from-zinc-50 to-transparent dark:from-black" />
 
-          {/* Banner défilante de droite à gauche */}
-          <div className="animate-marquee gap-5 pr-5">
-            {MARQUEE_ARTICLES.map((article, idx) => (
-              <a
-                key={`${article.id}-${idx}`}
-                href="/boutique"
-                className="group flex w-[320px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
-              >
-                {/* Image de l'article */}
-                <div className="relative h-48 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    draggable={false}
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+          {loadingProduits ? (
+            /* Skeleton d'attente pendant le chargement */
+            <div className="flex justify-center gap-6 py-10">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-80 w-72 animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800"
+                />
+              ))}
+            </div>
+          ) : displayProduits.length > 0 ? (
+            /* Rail défilant dynamique */
+            <div className="animate-marquee gap-5 pr-5">
+              {displayProduits.map((item, idx) => (
+                <a
+                  key={`${item.id}-${idx}`}
+                  href="/boutique"
+                  className="group flex w-[280px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
+                >
+                  {/* Photo de l'article provenant de l'API (photo_url) */}
+                  <div className="relative h-56 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                    <img
+                      src={item.photo_url}
+                      alt={item.nom}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      draggable={false}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
 
-                  {/* Badge Statut */}
-                  <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    {article.status}
-                  </div>
-
-                  {/* Badge Prix / Tickets */}
-                  <div className="absolute right-3 top-3 rounded-full bg-pink-500 px-3 py-1 text-xs font-bold text-white shadow-md">
-                    🎟️ {article.price}
-                  </div>
-                </div>
-
-                {/* Détails de l'article (Titre, Description & Tags) */}
-                <div className="mt-4 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
-                      {article.category}
-                    </span>
-                  </div>
-
-                  <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-pink-500 transition-colors line-clamp-1">
-                    {article.title}
-                  </h4>
-
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                    {article.description}
-                  </p>
-
-                  {/* Badges / Tags */}
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {article.tags.map((tag) => (
+                    {/* Badge Quantité / Disponibilité */}
+                    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
                       <span
-                        key={tag}
-                        className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                        className={`h-2 w-2 rounded-full ${
+                          item.quantite > 0
+                            ? "bg-emerald-400 animate-pulse"
+                            : "bg-rose-500"
+                        }`}
+                      />
+                      {item.quantite > 0 ? `En stock (${item.quantite})` : "Epuisé"}
+                    </div>
+
+                    {/* Badge Prix Tickets */}
+                    <div className="absolute right-3 top-3 rounded-full bg-pink-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+                      🎟️ {item.prix_tickets} {item.prix_tickets > 1 ? "Tickets" : "Ticket"}
+                    </div>
                   </div>
-                </div>
-              </a>
-            ))}
-          </div>
+
+                  {/* Infos de l'article (Nom, Type, Taille, Genre) */}
+                  <div className="mt-4 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
+                        {item.type}
+                      </span>
+                      {item.taille && (
+                        <span className="text-[10px] font-medium text-zinc-400">
+                          Taille : {item.taille}
+                        </span>
+                      )}
+                    </div>
+
+                    <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-pink-500 transition-colors line-clamp-1">
+                      {item.nom}
+                    </h4>
+
+                    {/* Badges complémentaires (Genre, Couleur) */}
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {item.genre && (
+                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                          {item.genre}
+                        </span>
+                      )}
+                      {item.couleur && (
+                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                          Couleur: {item.couleur}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-sm text-zinc-500">
+              Aucun article disponible pour le moment.
+            </p>
+          )}
         </div>
 
-        {/* Section Newsletter */}
+        {/* Section Inscription Newsletter Nouveautés */}
         <div className="w-full max-w-xl rounded-3xl border border-pink-100 bg-white/80 p-8 text-center shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 dark:bg-pink-950/50">
             <span className="text-2xl">💌</span>
