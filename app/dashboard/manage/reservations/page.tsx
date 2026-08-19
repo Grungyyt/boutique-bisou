@@ -15,7 +15,7 @@ type ReservationAdmin = {
   produit_type: string;
   produit_taille: string;
   produit_couleur: string;
-  produit_photo?: string | null; // Champ correct de l'API
+  produit_photo?: string | null;
   prix_tickets: number;
   status: string;
   user_id?: string | null;
@@ -27,8 +27,9 @@ type ReservationAdmin = {
 export default function ManageReservationsPage() {
   const router = useRouter();
   const [reservations, setReservations] = useState<ReservationAdmin[]>([]);
-  const [searchQuery, setSearchQuery] = useState(""); // Barre de recherche
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -88,7 +89,36 @@ export default function ManageReservationsPage() {
     init();
   }, []);
 
-  // Filtrage des réservations selon la recherche (par code à 6 chiffres, nom, produit, etc.)
+  // Fonction pour marquer comme vendue / validée
+  const handleMarkAsSold = async (reservationId: string) => {
+    if (!confirm("Voulez-vous vraiment marquer cette réservation comme vendue ?")) return;
+
+    setActionLoadingId(reservationId);
+    try {
+      // Ajustez l'endpoint selon votre API (ex: PUT ou POST sur /reservations/{id}/vendre ou /reservations/{id})
+      const res = await fetch(`${API_URL}/reservations/${reservationId}`, {
+        method: "PUT", // Ou "POST" selon votre backend
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "vendu" }), // ou "validé"
+      });
+
+      if (!res.ok) {
+        throw new Error("Erreur lors de la mise à jour de la réservation.");
+      }
+
+      // Mise à jour de la liste locale pour enlever ou modifier le statut instantanément
+      setReservations((prev) =>
+        prev.map((r) => (r.id === reservationId ? { ...r, status: "vendu" } : r))
+      );
+    } catch (err: any) {
+      alert(err.message || "Impossible d'effectuer l'action.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Filtrage par recherche
   const filteredReservations = reservations.filter((r) => {
     const query = searchQuery.toLowerCase();
     const code = (r.code_6_chiffres || "").toLowerCase();
@@ -106,7 +136,7 @@ export default function ManageReservationsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-4">
           <Link
             href="/dashboard"
@@ -126,7 +156,6 @@ export default function ManageReservationsPage() {
             </p>
           </div>
 
-          {/* Barre de recherche par numéro / code */}
           <div className="w-full sm:w-72">
             <input
               type="text"
@@ -153,7 +182,7 @@ export default function ManageReservationsPage() {
                 <th className="px-4 py-3">Article</th>
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">Statut</th>
-                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -169,7 +198,6 @@ export default function ManageReservationsPage() {
                 filteredReservations.map((r, index) => (
                   <tr key={r.id || index} className="text-zinc-700 dark:text-zinc-300">
                     <td className="px-4 py-3">
-                      {/* Photo agrandie (w-16 h-16) */}
                       {r.produit_photo ? (
                         <img
                           src={r.produit_photo}
@@ -191,12 +219,26 @@ export default function ManageReservationsPage() {
                       {r.code_6_chiffres || "------"}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                        r.status === "vendu" 
+                          ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                      }`}>
                         {r.status || "Actif"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-zinc-400">
-                      {r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : "-"}
+                    <td className="px-4 py-3 text-right">
+                      {r.status !== "vendu" ? (
+                        <button
+                          onClick={() => handleMarkAsSold(r.id)}
+                          disabled={actionLoadingId === r.id}
+                          className="rounded-xl bg-pink-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:opacity-50"
+                        >
+                          {actionLoadingId === r.id ? "Validation..." : "Marquer comme vendue"}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-zinc-400 italic">Déjà vendu</span>
+                      )}
                     </td>
                   </tr>
                 ))
