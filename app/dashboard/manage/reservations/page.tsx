@@ -1,88 +1,106 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGIN_URL = "/auth/login";
 
-export default function ManageReservationsPage() {
-  const [debugLog, setDebugLog] = useState<string>("Chargement en cours...");
-  const [rawLocalStorage, setRawLocalStorage] = useState<string>("");
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function runDebug() {
-      // 1. Regarder ce qu'il y a dans le localStorage
-      const rawUser = localStorage.getItem("user");
-      setRawLocalStorage(rawUser || "AUCUN UTILISATEUR DANS LOCALSTORAGE");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-      if (!rawUser) {
-        setDebugLog("Erreur : Pas d'utilisateur dans le localStorage. Redirection imminente vers le login...");
-        setTimeout(() => {
-          window.location.href = LOGIN_URL;
-        }, 2000);
-        return;
+    try {
+      // Requête de connexion vers votre API (en envoyant les cookies avec credentials)
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }), // Adaptez "email" par "username" si votre API utilise un pseudo
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || "Identifiants invalides.");
       }
 
-      let user;
-      try {
-        user = JSON.parse(rawUser);
-      } catch (e) {
-        setDebugLog("Erreur : Impossible de parser le JSON du localStorage.");
-        return;
+      const data = await res.json();
+
+      // ── ÉTAPE CRUCIALE : On sauvegarde l'utilisateur dans le localStorage ──
+      // Selon votre API, l'objet utilisateur peut être dans data.user ou directement dans data
+      const userData = data.user || data;
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirection vers le tableau de bord ou la boutique
+      if (userData.is_admin) {
+        router.push("/dashboard");
+      } else {
+        router.push("/boutique");
       }
-
-      setDebugLog(`Utilisateur trouvé : ID = ${user.id}, Admin = ${user.is_admin}. Tentative de fetch de l'API...`);
-
-      // 2. Tester l'appel API vers les réservations admin
-      try {
-        const res = await fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
-          credentials: "include",
-        });
-
-        const textResponse = await res.text();
-        
-        setDebugLog(
-          `Réponse reçue du serveur !\n` +
-          `Status HTTP : ${res.status} ${res.statusText}\n` +
-          `Réponse brute : ${textResponse}`
-        );
-
-        if (res.status === 401 || res.status === 403) {
-          setDebugLog((prev) => prev + "\n\n-> Le serveur a refusé l'accès (401/403). C'est pour cela que tu es bloqué !");
-        }
-      } catch (err: any) {
-        setDebugLog(`Erreur réseau lors du fetch : ${err.message}`);
-      }
+    } catch (err: any) {
+      setError(err.message || "Erreur de connexion au serveur.");
+    } finally {
+      setLoading(false);
     }
-
-    runDebug();
-  }, []);
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black text-zinc-900 dark:text-zinc-50">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-4">
-          <Link href="/dashboard" className="text-sm text-pink-600 underline">
-            ← Retour au tableau de bord
-          </Link>
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-black">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Connexion</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Connectez-vous à votre compte</p>
         </div>
 
-        <h1 className="text-xl font-bold mb-4">🔍 Outil de Debug Réservations</h1>
+        {error && (
+          <p className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+            {error}
+          </p>
+        )}
 
-        <div className="mb-6 rounded-xl border border-zinc-300 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold text-zinc-500 mb-1">Contenu du LocalStorage (« user ») :</h2>
-          <pre className="text-xs bg-zinc-100 dark:bg-zinc-950 p-3 rounded overflow-x-auto">
-            {rawLocalStorage}
-          </pre>
-        </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Email / Identifiant
+            </label>
+            <input
+              type="text"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
 
-        <div className="rounded-xl border border-zinc-300 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold text-zinc-500 mb-1">Résultat du Test API :</h2>
-          <pre className="text-xs bg-zinc-100 dark:bg-zinc-950 p-3 rounded whitespace-pre-wrap overflow-x-auto">
-            {debugLog}
-          </pre>
-        </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-pink-600 py-2.5 text-sm font-semibold text-white transition hover:bg-pink-700 disabled:opacity-50"
+          >
+            {loading ? "Connexion en cours..." : "Se connecter"}
+          </button>
+        </form>
       </div>
     </div>
   );
