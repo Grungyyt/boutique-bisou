@@ -1,101 +1,243 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
+const LOGIN_URL = "/auth/login";
 
-type ReservationAdmin = {
-  id: string;
-  user_nom: string;
-  user_prenom: string;
-  produit_nom: string;
-  produit_type: string;
-  code_6_chiffres: string;
-  status: string;
-  created_at: string;
+type Stats = {
+  totalProduits: number;
+  totalTickets: number;
 };
 
+const MODULES = [
+  {
+    title: "Gestion des vêtements",
+    description: "Ajouter, consulter et supprimer les vêtements du stock",
+    href: "/dashboard/manage/produit",
+    emoji: "👕",
+  },
+  {
+    title: "Gestion des tickets",
+    description: "Créer des types de tickets et gérer leur stock",
+    href: "/dashboard/manage/ticket",
+    emoji: "🎟️",
+  },
+  {
+    title: "Gestion des réservations",
+    description: "Consulter et valider les réservations des clients",
+    href: "/dashboard/manage/reservations",
+    emoji: "📌",
+  },
+  {
+    title: "Caisse",
+    description: "Encaisser un vêtement et retirer 1 du stock en un clic",
+    href: "/dashboard/manage/caisse",
+    emoji: "🛒",
+  },
+  {
+    title: "Tracker",
+    description: "Historique complet des ventes, ajouts et toutes les actions",
+    href: "/dashboard/manage/tracker",
+    emoji: "📊",
+  },
+];
+
 export default function DashboardPage() {
-  const router = useRouter();
-  const [reservations, setReservations] = useState<ReservationAdmin[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Gestion de l'écran de chargement via sessionStorage
+  const [showSplash, setShowSplash] = useState(false);
+  
+  // Suivi des requêtes HTTP
+  const [currentRequest, setCurrentRequest] = useState<string | null>(null);
+  const [failedRequest, setFailedRequest] = useState<string | null>(null);
+
   useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (!rawUser) {
-      router.push("/login");
-      return;
+    let isMounted = true;
+    const startTime = Date.now();
+
+    // Vérification de sessionStorage pour savoir si le splash screen a déjà été vu
+    const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
+
+    if (!hasSeenSplash) {
+      setShowSplash(true);
     }
 
-    const user = JSON.parse(rawUser);
+    const fetchStats = async () => {
+      setLoading(true);
+      setError(null);
+      setFailedRequest(null);
 
-    // Vérification stricte du statut administrateur
-    if (!user.is_admin) {
-      alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
-      router.push("/boutique");
-      return;
-    }
+      const requestUrl = `${API_URL}/produits`;
+      setCurrentRequest(requestUrl);
 
-    // Charger les réservations pour les admins
-    fetch(`${API_URL}/admin/reservations?user_id=${user.id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Erreur d'accès aux réservations admin");
-        return res.json();
-      })
-      .then((data) => setReservations(data.reservations || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [router]);
+      try {
+        const res = await fetch(requestUrl, { credentials: "include" });
+        
+        if (res.status === 401) {
+          window.location.href = LOGIN_URL;
+          return;
+        }
 
-  if (loading) return <div className="p-8 text-center">Vérification des droits...</div>;
-  if (error) return <div className="p-8 text-center text-rose-500">{error}</div>;
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (isMounted) {
+          setStats({
+            totalProduits: data.total ?? (data.produits?.length || 0),
+            totalTickets: data.total_tickets || 0,
+          });
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError("Impossible de charger les statistiques.");
+          setFailedRequest(requestUrl);
+        }
+      } finally {
+        if (isMounted) {
+          setCurrentRequest(null);
+          setLoading(false);
+
+          if (!hasSeenSplash) {
+            // S'assure que le splash dure au moins 4 secondes pour le premier affichage
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, 4000 - elapsedTime);
+
+            setTimeout(() => {
+              if (isMounted) {
+                setShowSplash(false);
+                sessionStorage.setItem("dashboard_splash_seen", "true");
+              }
+            }, remainingTime);
+          }
+        }
+      }
+    };
+
+    fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 dark:bg-black">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">
-          Tableau de bord Admin - Réservations
-        </h1>
+    <>
+      {/* ── Écran de chargement (uniquement lors de la première visite de la session) ── */}
+      {showSplash && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-white p-6 md:p-12">
+          <div />
 
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-100 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-              <tr>
-                <th className="p-4">Client (Nom / Prénom)</th>
-                <th className="p-4">Article</th>
-                <th className="p-4">Code 6 chiffres</th>
-                <th className="p-4">Statut</th>
-                <th className="p-4">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {reservations.map((r) => (
-                <tr key={r.id}>
-                  <td className="p-4 font-semibold text-zinc-900 dark:text-zinc-100">
-                    {r.user_nom} {r.user_prenom}
-                  </td>
-                  <td className="p-4 text-zinc-600 dark:text-zinc-300">
-                    {r.produit_nom} ({r.produit_type})
-                  </td>
-                  <td className="p-4 font-mono font-bold text-pink-600">
-                    {r.code_6_chiffres}
-                  </td>
-                  <td className="p-4">
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-xs text-zinc-400">
-                    {new Date(r.created_at).toLocaleString("fr-FR")}
-                  </td>
-                </tr>
+          <div className="flex flex-col items-center gap-4 text-zinc-800">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
+            <p className="animate-pulse text-lg font-medium">
+              Chargement en cours...
+            </p>
+          </div>
+
+          <div className="relative flex w-full items-end justify-between">
+            <div className="max-w-xs text-xs text-zinc-500">
+              {currentRequest ? (
+                <p className="truncate">
+                  <span className="font-semibold text-zinc-700">Chargement :</span> {currentRequest}
+                </p>
+              ) : (
+                <p className="text-zinc-400">Toutes les requêtes sont terminées</p>
+              )}
+            </div>
+
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <img
+                src="https://storage.vth-mc.fr/vth-b.png"
+                alt="Logo VTH"
+                className="h-60 w-auto object-contain md:h-60"
+              />
+            </div>
+
+            <div className="max-w-xs text-right text-xs">
+              {failedRequest && (
+                <p className="truncate font-medium text-rose-600">
+                  ⚠️ Échec : {failedRequest}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Dashboard ── */}
+      <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              ← Retour à l'accueil
+            </Link>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              Tableau de bord
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Vue d'ensemble de la boutique
+            </p>
+          </div>
+
+          {error && (
+            <p className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+              {error}
+            </p>
+          )}
+
+          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Total vêtements</p>
+              <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {loading ? "…" : stats?.totalProduits ?? 0}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Valeur totale</p>
+              <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {loading ? "…" : stats?.totalTickets ?? 0} 🎟️
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Gestion
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {MODULES.map((mod) => (
+                <Link
+                  key={mod.href}
+                  href={mod.href}
+                  className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-pink-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-pink-900"
+                >
+                  <div className="mb-3 text-2xl">{mod.emoji}</div>
+                  <h3 className="text-base font-semibold text-zinc-900 transition group-hover:text-pink-600 dark:text-zinc-50 dark:group-hover:text-pink-400">
+                    {mod.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                    {mod.description}
+                  </p>
+                </Link>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
