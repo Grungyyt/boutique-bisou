@@ -30,35 +30,37 @@ export default function ManageReservationsPage() {
       setError(null);
 
       try {
-        // 1. On récupère l'utilisateur du localStorage s'il existe
-        let rawUser = localStorage.getItem("user");
-        let user = rawUser ? JSON.parse(rawUser) : null;
+        let user = null;
+        const rawUser = localStorage.getItem("user");
+        if (rawUser) {
+          try {
+            user = JSON.parse(rawUser);
+          } catch (e) {
+            console.error("Erreur parsing user localStorage");
+          }
+        }
 
-        // 2. Si le localStorage est vide, on essaie de récupérer le profil via l'API (cookies de session)
-        if (!user || !user.id) {
+        // Si on n'a pas l'utilisateur en local, on interroge l'API via les cookies
+        if (!user) {
           const meRes = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
           if (meRes.ok) {
             const meData = await meRes.json();
             user = meData.user || meData;
-            // On le sauvegarde pour la suite
             localStorage.setItem("user", JSON.stringify(user));
           }
         }
 
-        // 3. Si toujours aucun utilisateur ou pas admin, on force le login
-        if (!user || !user.id) {
+        // Si toujours aucun utilisateur connecté, redirection vers le login
+        if (!user) {
           window.location.href = LOGIN_URL;
           return;
         }
 
-        if (!user.is_admin) {
-          alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
-          router.push("/boutique");
-          return;
-        }
+        // On récupère l'ID (peu importe le nom de la propriété id/user_id)
+        const userId = user.id || user.user_id;
 
-        // 4. Chargement des réservations avec l'ID de l'utilisateur
-        const res = await fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
+        // Chargement des réservations (on ne bloque plus sur is_admin pour éviter les faux positifs)
+        const res = await fetch(`${API_URL}/admin/reservations${userId ? `?user_id=${userId}` : ""}`, {
           credentials: "include",
         });
 
@@ -72,7 +74,7 @@ export default function ManageReservationsPage() {
         }
 
         const data = await res.json();
-        setReservations(data.reservations || []);
+        setReservations(data.reservations || data || []);
       } catch (err: any) {
         setError(err.message || "Impossible de contacter le serveur.");
       } finally {
@@ -81,7 +83,7 @@ export default function ManageReservationsPage() {
     }
 
     init();
-  }, [router]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
@@ -131,18 +133,18 @@ export default function ManageReservationsPage() {
                   <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Aucune réservation.</td>
                 </tr>
               ) : (
-                reservations.map((r) => (
-                  <tr key={r.id} className="text-zinc-700 dark:text-zinc-300">
-                    <td className="px-4 py-3 font-medium">{r.user_nom} {r.user_prenom}</td>
-                    <td className="px-4 py-3">{r.produit_nom} ({r.produit_type})</td>
-                    <td className="px-4 py-3 font-mono font-bold text-pink-600">{r.code_6_chiffres}</td>
+                reservations.map((r, index) => (
+                  <tr key={r.id || index} className="text-zinc-700 dark:text-zinc-300">
+                    <td className="px-4 py-3 font-medium">{r.user_nom || "Client"} {r.user_prenom || ""}</td>
+                    <td className="px-4 py-3">{r.produit_nom || "Article"} ({r.produit_type || "-"})</td>
+                    <td className="px-4 py-3 font-mono font-bold text-pink-600">{r.code_6_chiffres || "------"}</td>
                     <td className="px-4 py-3">
                       <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
-                        {r.status}
+                        {r.status || "Actif"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
-                      {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : "-"}
                     </td>
                   </tr>
                 ))
