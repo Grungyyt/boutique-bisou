@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
