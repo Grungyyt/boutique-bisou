@@ -31,21 +31,32 @@ export default function DashboardPage() {
 
     const user = JSON.parse(rawUser);
 
-    // Vérification strict du statut administrateur
+    // Vérification stricte du statut administrateur
     if (!user.is_admin) {
       alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
       router.push("/boutique");
       return;
     }
 
-    // Charger les réservations pour les admins
-    fetch(`${API_URL}/admin/reservations?user_id=${user.id}`)
+    // Charger les réservations avec credentials: "include" pour envoyer les cookies de session
+    fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
+      credentials: "include",
+    })
       .then((res) => {
+        // Si le serveur renvoie 401, on redirige vers le login
+        if (res.status === 401) {
+          router.push("/auth/login");
+          throw new Error("Session expirée");
+        }
         if (!res.ok) throw new Error("Erreur d'accès aux réservations admin");
         return res.json();
       })
       .then((data) => setReservations(data.reservations || []))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        if (err.message !== "Session expirée") {
+          setError(err.message);
+        }
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
