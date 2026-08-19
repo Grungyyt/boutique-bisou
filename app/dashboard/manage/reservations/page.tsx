@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
@@ -73,7 +71,6 @@ export default function AdminReservationsPage() {
         throw new Error("Erreur lors de la mise à jour du statut.");
       }
 
-      // Mise à jour locale de l'état
       setReservations((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status: "vendue" } : r))
       );
