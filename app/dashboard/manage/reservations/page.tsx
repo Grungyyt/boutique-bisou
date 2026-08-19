@@ -25,7 +25,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
