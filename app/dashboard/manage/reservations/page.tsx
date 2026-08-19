@@ -13,6 +13,7 @@ type ReservationAdmin = {
   user_prenom: string;
   produit_nom: string;
   produit_type: string;
+  produit_photo_url?: string | null; // Ajout du champ pour la photo
   code_6_chiffres: string;
   status: string;
   created_at: string;
@@ -115,6 +116,7 @@ export default function ManageReservationsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
               <tr>
+                <th className="px-4 py-3" /> {/* Colonne pour la photo */}
                 <th className="px-4 py-3">Client</th>
                 <th className="px-4 py-3">Article</th>
                 <th className="px-4 py-3">Code</th>
@@ -125,15 +127,26 @@ export default function ManageReservationsPage() {
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Chargement...</td>
+                  <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Chargement...</td>
                 </tr>
               ) : reservations.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">Aucune réservation.</td>
+                  <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Aucune réservation.</td>
                 </tr>
               ) : (
                 reservations.map((r, index) => (
                   <tr key={r.id || index} className="text-zinc-700 dark:text-zinc-300">
+                    <td className="px-4 py-3">
+                      {r.produit_photo_url ? (
+                        <img
+                          src={r.produit_photo_url}
+                          alt={r.produit_nom || "Produit"}
+                          className="h-10 w-10 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium">{r.user_nom || "Client"} {r.user_prenom || ""}</td>
                     <td className="px-4 py-3">{r.produit_nom || "Article"} ({r.produit_type || "-"})</td>
                     <td className="px-4 py-3 font-mono font-bold text-pink-600">{r.code_6_chiffres || "------"}</td>
