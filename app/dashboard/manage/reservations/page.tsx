@@ -17,61 +17,68 @@ type ReservationAdmin = {
   created_at: string;
 };
 
-export default function DashboardReservationsPage() {
+export default function DashboardPage() {
   const router = useRouter();
   const [reservations, setReservations] = useState<ReservationAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function checkAuthAndFetchReservations() {
+    async function loadData() {
       setLoading(true);
       setError(null);
 
+      const rawUser = localStorage.getItem("user");
+      if (!rawUser) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      let user;
       try {
-        // 1. Récupération de l'utilisateur depuis le localStorage (comme dans votre logique actuelle)
-        const rawUser = localStorage.getItem("user");
-        if (!rawUser) {
-          window.location.href = LOGIN_URL;
-          return;
-        }
+        user = JSON.parse(rawUser);
+      } catch {
+        window.location.href = LOGIN_URL;
+        return;
+      }
 
-        const user = JSON.parse(rawUser);
+      if (!user.is_admin) {
+        alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
+        router.push("/boutique");
+        return;
+      }
 
-        // 2. Vérification stricte du statut administrateur
-        if (!user.is_admin) {
-          alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
-          router.push("/boutique");
-          return;
-        }
-
-        // 3. Charger les réservations avec credentials: "include" pour envoyer les cookies de session
+      try {
         const res = await fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
-          credentials: "include",
+          method: "GET",
+          credentials: "include", // Indispensable pour transmettre les cookies de session au backend[cite: 2]
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
 
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           window.location.href = LOGIN_URL;
           return;
         }
 
         if (!res.ok) {
-          throw new Error("Erreur d'accès aux réservations admin");
+          throw new Error("Erreur lors de la récupération des réservations.");
         }
 
         const data = await res.json();
         setReservations(data.reservations || []);
       } catch (err: any) {
-        setError(err.message || "Impossible de charger les réservations.");
+        setError(err.message || "Impossible de charger les données.");
       } finally {
         setLoading(false);
       }
     }
 
-    checkAuthAndFetchReservations();
+    loadData();
   }, [router]);
 
-  if (loading) return <div className="p-8 text-center text-zinc-500">Vérification des droits...</div>;
+  if (loading) return <div className="p-8 text-center text-zinc-500">Chargement des réservations...</div>;
   if (error) return <div className="p-8 text-center text-rose-500">{error}</div>;
 
   return (
