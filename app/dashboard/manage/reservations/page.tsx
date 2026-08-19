@@ -23,37 +23,46 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (!rawUser) {
-      router.push("/auth/login");
-      return;
-    }
-
-    const user = JSON.parse(rawUser);
-
-    // Vérification stricte du statut administrateur
-    if (!user.is_admin) {
-      alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
-      router.push("/boutique");
-      return;
-    }
-
-    // Charger les réservations avec credentials: "include" pour envoyer les cookies de session
-    fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
-      credentials: "include",
+    // 1. On interroge l'endpoint d'authentification pour vérifier la session active
+    fetch(`${API_URL}/auth/me`, {
+      credentials: "include", // Envoie les cookies de session au serveur
     })
       .then((res) => {
-        // Si le serveur renvoie 401, on redirige vers le login
-        if (res.status === 401) {
+        if (!res.ok) {
+          // Si non authentifié (401 ou autre), redirection vers le login
           router.push("/auth/login");
-          throw new Error("Session expirée");
+          throw new Error("Non authentifié");
         }
+        return res.json();
+      })
+      .then((userData) => {
+        // L'API /auth/me renvoie généralement l'objet utilisateur (adaptez userData.is_admin selon votre backend)
+        const user = userData.user || userData;
+
+        // 2. Vérification stricte du statut administrateur
+        if (!user.is_admin) {
+          alert("Accès refusé : Ce compte n'a pas les privilèges administrateur.");
+          router.push("/boutique");
+          return;
+        }
+
+        // 3. Charger les réservations pour les admins une fois l'auth validée
+        return fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
+          credentials: "include",
+        });
+      })
+      .then((res) => {
+        if (!res) return;
         if (!res.ok) throw new Error("Erreur d'accès aux réservations admin");
         return res.json();
       })
-      .then((data) => setReservations(data.reservations || []))
+      .then((data) => {
+        if (data) {
+          setReservations(data.reservations || []);
+        }
+      })
       .catch((err) => {
-        if (err.message !== "Session expirée") {
+        if (err.message !== "Non authentifié") {
           setError(err.message);
         }
       })
