@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
+const LOGIN_URL = "/auth/login";
 
 type ReservationAdmin = {
   id: string;
@@ -16,28 +17,26 @@ type ReservationAdmin = {
   created_at: string;
 };
 
-export default function DashboardPage() {
+export default function DashboardReservationsPage() {
   const router = useRouter();
   const [reservations, setReservations] = useState<ReservationAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. On interroge l'endpoint d'authentification pour vérifier la session active
-    fetch(`${API_URL}/auth/me`, {
-      credentials: "include", // Envoie les cookies de session au serveur
-    })
-      .then((res) => {
-        if (!res.ok) {
-          // Si non authentifié (401 ou autre), redirection vers le login
-          router.push("/auth/login");
-          throw new Error("Non authentifié");
+    async function checkAuthAndFetchReservations() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // 1. Récupération de l'utilisateur depuis le localStorage (comme dans votre logique actuelle)
+        const rawUser = localStorage.getItem("user");
+        if (!rawUser) {
+          window.location.href = LOGIN_URL;
+          return;
         }
-        return res.json();
-      })
-      .then((userData) => {
-        // L'API /auth/me renvoie généralement l'objet utilisateur (adaptez userData.is_admin selon votre backend)
-        const user = userData.user || userData;
+
+        const user = JSON.parse(rawUser);
 
         // 2. Vérification stricte du statut administrateur
         if (!user.is_admin) {
@@ -46,35 +45,47 @@ export default function DashboardPage() {
           return;
         }
 
-        // 3. Charger les réservations pour les admins une fois l'auth validée
-        return fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
+        // 3. Charger les réservations avec credentials: "include" pour envoyer les cookies de session
+        const res = await fetch(`${API_URL}/admin/reservations?user_id=${user.id}`, {
           credentials: "include",
         });
-      })
-      .then((res) => {
-        if (!res) return;
-        if (!res.ok) throw new Error("Erreur d'accès aux réservations admin");
-        return res.json();
-      })
-      .then((data) => {
-        if (data) {
-          setReservations(data.reservations || []);
+
+        if (res.status === 401) {
+          window.location.href = LOGIN_URL;
+          return;
         }
-      })
-      .catch((err) => {
-        if (err.message !== "Non authentifié") {
-          setError(err.message);
+
+        if (!res.ok) {
+          throw new Error("Erreur d'accès aux réservations admin");
         }
-      })
-      .finally(() => setLoading(false));
+
+        const data = await res.json();
+        setReservations(data.reservations || []);
+      } catch (err: any) {
+        setError(err.message || "Impossible de charger les réservations.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkAuthAndFetchReservations();
   }, [router]);
 
-  if (loading) return <div className="p-8 text-center">Vérification des droits...</div>;
+  if (loading) return <div className="p-8 text-center text-zinc-500">Vérification des droits...</div>;
   if (error) return <div className="p-8 text-center text-rose-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-zinc-50 p-8 dark:bg-black">
       <div className="mx-auto max-w-5xl">
+        <div className="mb-6">
+          <a
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          >
+            ← Retour au tableau de bord
+          </a>
+        </div>
+
         <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">
           Tableau de bord Admin - Réservations
         </h1>
@@ -91,27 +102,35 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {reservations.map((r) => (
-                <tr key={r.id}>
-                  <td className="p-4 font-semibold text-zinc-900 dark:text-zinc-100">
-                    {r.user_nom} {r.user_prenom}
-                  </td>
-                  <td className="p-4 text-zinc-600 dark:text-zinc-300">
-                    {r.produit_nom} ({r.produit_type})
-                  </td>
-                  <td className="p-4 font-mono font-bold text-pink-600">
-                    {r.code_6_chiffres}
-                  </td>
-                  <td className="p-4">
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-xs text-zinc-400">
-                    {new Date(r.created_at).toLocaleString("fr-FR")}
+              {reservations.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-zinc-400">
+                    Aucune réservation trouvée.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                reservations.map((r) => (
+                  <tr key={r.id}>
+                    <td className="p-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                      {r.user_nom} {r.user_prenom}
+                    </td>
+                    <td className="p-4 text-zinc-600 dark:text-zinc-300">
+                      {r.produit_nom} ({r.produit_type})
+                    </td>
+                    <td className="p-4 font-mono font-bold text-pink-600">
+                      {r.code_6_chiffres}
+                    </td>
+                    <td className="p-4">
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-xs text-zinc-400">
+                      {new Date(r.created_at).toLocaleString("fr-FR")}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
