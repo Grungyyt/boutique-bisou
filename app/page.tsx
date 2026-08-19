@@ -1,237 +1,320 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const API_URL = "https://api.boutique-bisou.vth-mc.fr";
+// Les 5 photos, hébergées sur le storage.
+const IMAGES = [
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
+];
 
-type Produit = {
-  id: string;
-  nom: string;
-  type: string;
-  taille: string;
-  couleur: string;
-  photo: string | null;
-  prix_tickets: number;
-  disponible: boolean;
-};
+// Tags affichés en bas à gauche de chaque carte.
+const TAGS: [string, string][] = [
+  ["BOUTIQUE BISOU", "Ouverture 2025 2026"],
+  ["BOUTIQUE BISOU", "Dans la boutique"],
+  ["BOUTIQUE BISOU", "Décoration"],
+  ["BOUTIQUE BISOU", "Discussions pendant l'ouverture"],
+  ["BOUTIQUE BISOU", "Ouverture avec Les Medias"],
+];
+
+const ROT_JITTER = [0, -6, 5, -4, 7];
+
+const SWIPE_MS = 550;
+const SETTLE_MS = 480;
+const FRONT_HOLD_MS = 2400; // Temps passé devant avant de swiper
+
+const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + FRONT_HOLD_MS;
 
 export default function HomePage() {
-  const [produits, setProduits] = useState<Produit[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState<string>("");
-  const [selectedType, setSelectedType] = useState<string>("Tous");
-  const [reservingId, setReservingId] = useState<string | null>(null);
-  const [reservationSuccess, setReservationSuccess] = useState<{ code: string; nom: string } | null>(null);
+  const [order, setOrder] = useState<number[]>(IMAGES.map((_, i) => i));
+  const [swipingId, setSwipingId] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const topRef = useRef<HTMLDivElement>(null);
+  // Gestion de la newsletter
+  const [email, setEmail] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchProduits = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/produits`);
-      if (!res.ok) throw new Error("Erreur lors de la récupération des produits.");
-      const data = await res.json();
-      setProduits(data.produits || data || []);
-    } catch (err: any) {
-      setError(err.message || "Impossible de charger le catalogue.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const runCycle = useCallback(() => {
+    timerRef.current = setTimeout(() => {
+      if (paused) {
+        runCycle();
+        return;
+      }
+      setOrder((prev) => {
+        setSwipingId(prev[0]);
+        return prev;
+      });
+
+      setTimeout(() => {
+        setOrder((prev) => [...prev.slice(1), prev[0]]);
+        setSwipingId(null);
+      }, SWIPE_MS);
+
+      runCycle();
+    }, HOLD_PAUSE);
+  }, [paused]);
 
   useEffect(() => {
-    fetchProduits();
-  }, [fetchProduits]);
+    runCycle();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [runCycle]);
 
-  const typesList = useMemo(() => {
-    const types = Array.from(new Set(produits.map((p) => p.type).filter(Boolean)));
-    return ["Tous", ...types];
-  }, [produits]);
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || isSubmitting) return;
 
-  const filteredProduits = useMemo(() => {
-    return produits.filter((p) => {
-      const matchesSearch =
-        p.nom.toLowerCase().includes(search.toLowerCase()) ||
-        p.couleur.toLowerCase().includes(search.toLowerCase()) ||
-        p.taille.toLowerCase().includes(search.toLowerCase());
-      const matchesType = selectedType === "Tous" || p.type === selectedType;
-      return matchesSearch && matchesType;
-    });
-  }, [produits, search, selectedType]);
+    setIsSubmitting(true);
+    setStatusMessage("");
+    setStatusType("");
 
-  const handleReserver = async (produitId: string) => {
-    setReservingId(produitId);
     try {
-      const res = await fetch(`${API_URL}/reservations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ produit_id: produitId }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Erreur lors de la réservation.");
-      }
-
+      const res = await fetch(
+        "https://api.boutique-bisou.vth-mc.fr/newsletter/subscribe",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
       const data = await res.json();
-      const target = produits.find((p) => p.id === produitId);
 
-      setReservationSuccess({
-        code: data.code_6_chiffres || data.code || "123456",
-        nom: target?.nom || "Article",
-      });
-
-      fetchProduits();
-    } catch (err: any) {
-      alert(err.message || "Une erreur est survenue lors de la réservation.");
+      if (res.ok) {
+        setStatusType("success");
+        setStatusMessage(data.message || "Inscription réussie !");
+        setEmail("");
+      } else {
+        setStatusType("error");
+        setStatusMessage(data.detail || "Une erreur est survenue.");
+      }
+    } catch {
+      setStatusType("error");
+      setStatusMessage("Impossible de contacter le serveur.");
     } finally {
-      setReservingId(null);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div ref={topRef} className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100 p-6">
-      <header className="mx-auto max-w-6xl mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
-        <div>
-          <h1 className="text-3xl font-black text-pink-600 dark:text-pink-400">
-            Boutique Bisou 💋
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Réserve tes vêtements préférés en tickets !
-          </p>
-        </div>
-        <Link
-          href="/dashboard"
-          className="rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Espace Admin →
-        </Link>
-      </header>
+    <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
+      {/* GIF fixe sur le côté gauche */}
+      <div className="fixed bottom-8 left-4 z-50 hidden lg:block">
+        <img
+          src="https://storage.vth-mc.fr/img/web/marche.gif"
+          alt="Support"
+          className="h-32 w-auto object-contain"
+        />
+      </div>
 
-      <main className="mx-auto max-w-6xl">
-        {/* Validation de réservation */}
-        {reservationSuccess && (
-          <div className="mb-8 rounded-2xl border border-emerald-300 bg-emerald-50 p-6 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200">
-            <h2 className="text-lg font-bold mb-2">🎉 Réservation réussie !</h2>
-            <p className="text-sm mb-4">
-              Article réservé : <strong>{reservationSuccess.nom}</strong>
-            </p>
-            <div className="rounded-xl bg-white p-4 text-center shadow-inner dark:bg-zinc-900">
-              <p className="text-xs uppercase font-bold text-zinc-400">Présente ce code en boutique</p>
-              <p className="text-3xl font-black font-mono text-pink-600 dark:text-pink-400 tracking-widest mt-1">
-                #{reservationSuccess.code}
-              </p>
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 py-16">
+        {/* En-tête + Pile de cartes */}
+        <div className="flex w-full flex-col items-center justify-center gap-10 lg:flex-row lg:gap-20">
+          {/* Texte d'intro */}
+          <div className="max-w-md text-center lg:text-left">
+            {/* Logo Bisou */}
+            <div className="mb-8 flex justify-center lg:justify-start">
+              <img
+                src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+                alt="Logo Boutique Bisou"
+                className="h-32 w-auto object-contain"
+              />
             </div>
-            <button
-              onClick={() => setReservationSuccess(null)}
-              className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800"
-            >
-              Fermer
-            </button>
-          </div>
-        )}
 
-        {/* Barre de recherche et filtres */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un vêtement, taille, couleur..."
-            className="w-full sm:max-w-xs rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs outline-none focus:border-pink-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            {typesList.map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  selectedType === type
-                    ? "bg-pink-600 text-white"
-                    : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                }`}
+            <span className="mb-4 inline-block rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+              Boutique Bisou
+            </span>
+            <h1 className="text-4xl font-semibold leading-tight text-zinc-900 dark:text-zinc-50">
+              Des vêtements choisis avec cœur
+            </h1>
+            <p className="mt-4 text-base text-zinc-500 dark:text-zinc-400">
+              Chaque pièce a sa propre histoire. Échangez vos tickets contre des
+              vêtements uniques, sélectionnés un à un.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+              <a
+                href="/boutique"
+                className="inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90 active:scale-95"
               >
-                {type}
-              </button>
-            ))}
+                Voir les articles
+              </a>
+              <a
+                href="/equipe"
+                className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+              >
+                Voir l'Équipe
+              </a>
+              <a
+                href="/verif"
+                className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+              >
+                Tableau de bord
+              </a>
+              <a
+                href="https://ko-fi.com/vth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+              >
+                <img
+                  src="https://storage.vth-mc.fr/img/web/marche.gif"
+                  alt=""
+                  className="h-5 w-auto"
+                />
+                Soutenir
+              </a>
+            </div>
+          </div>
+
+          {/* Pile de photos qui swipent */}
+          <div
+            className="relative h-[520px] w-[340px] shrink-0 sm:h-[580px] sm:w-[380px]"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            {order.map((imgIndex, pos) => {
+              const isFront = pos === 0;
+              const isSwiping = swipingId === imgIndex;
+
+              const depth = isSwiping ? 0 : pos;
+              const baseRotate = ROT_JITTER[imgIndex];
+              const stackRotate =
+                depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
+              const translateY = depth * 14;
+              const scale = 1 - depth * 0.055;
+
+              const transform = isSwiping
+                ? `translate(135%, -10%) rotate(${28 + baseRotate}deg) scale(0.92)`
+                : `translateY(${translateY}px) rotate(${stackRotate}deg) scale(${scale})`;
+
+              return (
+                <div
+                  key={imgIndex}
+                  className="absolute inset-0"
+                  style={{
+                    zIndex: 50 - pos,
+                    transform,
+                    opacity: isSwiping ? 0 : 1,
+                    transition: isSwiping
+                      ? `transform ${SWIPE_MS}ms cubic-bezier(.45,0,.55,1), opacity ${SWIPE_MS}ms ease-out`
+                      : `transform ${SETTLE_MS}ms cubic-bezier(.22,1,.36,1), opacity 250ms ease-out`,
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
+                    <img
+                      src={IMAGES[imgIndex]}
+                      alt={`Vêtement ${imgIndex + 1}`}
+                      className="h-full w-full object-cover"
+                      draggable={false}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+
+                    {isFront && (
+                      <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
+                        <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm animate-pulse" />
+                      </div>
+                    )}
+
+                    {isFront && (
+                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 max-w-[80%]">
+                        {TAGS[imgIndex].map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {isFront && !isSwiping && (
+                      <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 17 17 7M9 7h8v8" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {IMAGES.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    order[0] === i
+                      ? "w-5 bg-pink-500"
+                      : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 rounded-xl bg-rose-50 p-4 text-xs font-semibold text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
-            {error}
+        {/* Section Inscription Newsletter Nouveautés */}
+        <div className="mt-24 w-full max-w-xl rounded-3xl border border-pink-100 bg-white/80 p-8 text-center shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 dark:bg-pink-950/50">
+            <span className="text-2xl">💌</span>
           </div>
-        )}
+          <h3 className="mt-4 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            Alerte nouveaux vêtements
+          </h3>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            Soyez le premier informé dès qu’un nouvel article est ajouté à la boutique. Recevez la photo et les détails directement par e-mail.
+          </p>
 
-        {/* Catalogue */}
-        {loading ? (
-          <div className="py-20 text-center text-xs text-zinc-400">
-            Chargement de la boutique...
-          </div>
-        ) : filteredProduits.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center text-sm text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950">
-            Aucun vêtement ne correspond à votre recherche.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProduits.map((p) => (
-              <div
-                key={p.id}
-                className="flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-              >
-                <div className="h-48 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
-                  {p.photo ? (
-                    <img
-                      src={p.photo}
-                      alt={p.nom}
-                      className="h-full w-full object-cover transition duration-300 hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
-                      Pas d'image
-                    </div>
-                  )}
-                  {!p.disponible && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white uppercase tracking-wider">
-                        Indisponible
-                      </span>
-                    </div>
-                  )}
-                </div>
+          <form onSubmit={handleSubscribe} className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="votre.email@exemple.com"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
+            >
+              {isSubmitting ? "Inscription..." : "M'inscrire"}
+            </button>
+          </form>
 
-                <div className="p-4 flex flex-col flex-1 justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-50">
-                      {p.nom}
-                    </h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                      {p.type} · Taille {p.taille} · {p.couleur}
-                    </p>
-                    <p className="mt-2 text-sm font-black text-pink-600 dark:text-pink-400">
-                      {p.prix_tickets} ticket(s) 🎟️
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => handleReserver(p.id)}
-                    disabled={!p.disponible || reservingId === p.id}
-                    className="w-full rounded-xl bg-pink-600 py-2.5 text-xs font-bold text-white transition hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {reservingId === p.id
-                      ? "Réservation..."
-                      : p.disponible
-                      ? "Réserver cet article"
-                      : "Non disponible"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+          {statusMessage && (
+            <p
+              className={`mt-4 text-xs font-semibold ${
+                statusType === "success"
+                  ? "text-emerald-500"
+                  : "text-rose-500"
+              }`}
+            >
+              {statusType === "success" ? "✨ " : "⚠️ "}
+              {statusMessage}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
