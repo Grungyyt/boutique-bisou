@@ -58,12 +58,9 @@ export default function ManageReservationsPage() {
 
         const userId = user.id || user.user_id;
 
-        // Appel POST pour éviter l'erreur 405 (Method Not Allowed) sur la route admin
-        const res = await fetch(`${API_URL}/admin/reservations`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        // Requête directe sur /reservations
+        const res = await fetch(`${API_URL}/reservations${userId ? `?user_id=${userId}` : ""}`, {
           credentials: "include",
-          body: JSON.stringify({ user_id: userId }),
         });
 
         if (res.status === 401 || res.status === 403) {
