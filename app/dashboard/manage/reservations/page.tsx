@@ -56,12 +56,14 @@ export default function ManageReservationsPage() {
           return;
         }
 
-        // On récupère l'ID (peu importe le nom de la propriété id/user_id)
         const userId = user.id || user.user_id;
 
-        // Chargement des réservations (on ne bloque plus sur is_admin pour éviter les faux positifs)
-        const res = await fetch(`${API_URL}/admin/reservations${userId ? `?user_id=${userId}` : ""}`, {
+        // Appel POST pour éviter l'erreur 405 (Method Not Allowed) sur la route admin
+        const res = await fetch(`${API_URL}/admin/reservations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ user_id: userId }),
         });
 
         if (res.status === 401 || res.status === 403) {
