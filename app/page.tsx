@@ -2,32 +2,62 @@
 
 import { useState } from "react";
 
-// Les 5 photos avec leurs tags respectifs
-const ITEMS = [
+// Structure complète des articles de vêtements (T-Shirts)
+const ARTICLES = [
   {
-    src: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
-    tags: ["BOUTIQUE BISOU", "Ouverture 2025 2026"],
+    id: 1,
+    title: "T-Shirt Bisou - Édition Ouverture",
+    category: "T-Shirt",
+    price: "1 Ticket",
+    description: "T-shirt collector sélectionné pour l'ouverture 2025-2026.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
+    tags: ["BOUTIQUE BISOU", "Ouverture"],
+    status: "Disponible",
   },
   {
-    src: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
-    tags: ["BOUTIQUE BISOU", "Dans la boutique"],
+    id: 2,
+    title: "T-Shirt Bisou - Dans la Boutique",
+    category: "T-Shirt",
+    price: "2 Tickets",
+    description: "Pièce unique choisie avec cœur, disponible en boutique.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
+    tags: ["BOUTIQUE BISOU", "Boutique"],
+    status: "Disponible",
   },
   {
-    src: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
+    id: 3,
+    title: "T-Shirt Bisou - Motif Déco",
+    category: "T-Shirt",
+    price: "1 Ticket",
+    description: "Design inspiré de la décoration originale de notre boutique.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
     tags: ["BOUTIQUE BISOU", "Décoration"],
+    status: "Disponible",
   },
   {
-    src: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
-    tags: ["BOUTIQUE BISOU", "Discussions pendant l'ouverture"],
+    id: 4,
+    title: "T-Shirt Bisou - Event Discussion",
+    category: "T-Shirt",
+    price: "3 Tickets",
+    description: "Porté lors des sessions d'échange pendant l'ouverture.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
+    tags: ["BOUTIQUE BISOU", "Événement"],
+    status: "Disponible",
   },
   {
-    src: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
-    tags: ["BOUTIQUE BISOU", "Ouverture avec Les Medias"],
+    id: 5,
+    title: "T-Shirt Bisou - Édition Médias",
+    category: "T-Shirt",
+    price: "2 Tickets",
+    description: "Édition limitée mise en avant lors du passage des médias.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
+    tags: ["BOUTIQUE BISOU", "Les Médias"],
+    status: "Édition Limitée",
   },
 ];
 
 export default function HomePage() {
-  // Gestion de la newsletter
+  // Inscription Newsletter
   const [email, setEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState<"success" | "error" | "">("");
@@ -68,25 +98,25 @@ export default function HomePage() {
     }
   };
 
-  // Duplication de la liste pour assurer une boucle infinie et fluide
-  const MARQUEE_ITEMS = [...ITEMS, ...ITEMS, ...ITEMS];
+  // Duplication des articles pour créer une boucle infinie parfaite
+  const MARQUEE_ARTICLES = [...ARTICLES, ...ARTICLES];
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
-      {/* Styles CSS pour l'animation du marquee et la pause au survol */}
+      {/* Styles CSS pour l'animation du marquee façon Modrinth et pause au survol */}
       <style jsx>{`
         @keyframes marquee {
           0% {
             transform: translateX(0%);
           }
           100% {
-            transform: translateX(-33.333%);
+            transform: translateX(-50%);
           }
         }
         .animate-marquee {
           display: flex;
           width: max-content;
-          animation: marquee 25s linear infinite;
+          animation: marquee 28s linear infinite;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
@@ -102,10 +132,9 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 py-16 gap-16">
-        {/* En-tête / Hero */}
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 py-16 gap-14">
+        {/* En-tête / Hero Section */}
         <div className="flex w-full flex-col items-center justify-center text-center max-w-3xl">
-          {/* Logo Bisou */}
           <div className="mb-8 flex justify-center">
             <img
               src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
@@ -159,49 +188,76 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- SECTION DÉFILANTE TYPE MODRINTH (MARQUEE) --- */}
+        {/* --- SECTION DÉFILANTE D'ARTICLES (MARQUEE TYPE MODRINTH) --- */}
         <div className="relative w-full overflow-hidden py-4">
           {/* Degradés sur les bords pour l'effet de fondu */}
-          <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-24 bg-gradient-to-r from-zinc-50 to-transparent dark:from-black" />
-          <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-24 bg-gradient-to-l from-zinc-50 to-transparent dark:from-black" />
+          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-20 bg-gradient-to-r from-zinc-50 to-transparent dark:from-black" />
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-20 bg-gradient-to-l from-zinc-50 to-transparent dark:from-black" />
 
-          {/* Rail d'images qui défile de droite à gauche */}
-          <div className="animate-marquee gap-6 pr-6">
-            {MARQUEE_ITEMS.map((item, idx) => (
-              <div
-                key={idx}
-                className="group relative h-[420px] w-[280px] shrink-0 overflow-hidden rounded-3xl bg-zinc-200 shadow-xl transition-transform duration-300 hover:scale-[1.02] dark:bg-zinc-800 ring-1 ring-black/5"
+          {/* Banner défilante de droite à gauche */}
+          <div className="animate-marquee gap-5 pr-5">
+            {MARQUEE_ARTICLES.map((article, idx) => (
+              <a
+                key={`${article.id}-${idx}`}
+                href="/boutique"
+                className="group flex w-[320px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
               >
-                <img
-                  src={item.src}
-                  alt={`Vêtement ${idx + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  draggable={false}
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+                {/* Image de l'article */}
+                <div className="relative h-48 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    draggable={false}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-                {/* Badge Status */}
-                <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
-                  <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm animate-pulse" />
+                  {/* Badge Statut */}
+                  <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    {article.status}
+                  </div>
+
+                  {/* Badge Prix / Tickets */}
+                  <div className="absolute right-3 top-3 rounded-full bg-pink-500 px-3 py-1 text-xs font-bold text-white shadow-md">
+                    🎟️ {article.price}
+                  </div>
                 </div>
 
-                {/* Tags du T-shirt */}
-                <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5 max-w-[90%]">
-                  {item.tags.map((tag, tIdx) => (
-                    <span
-                      key={tIdx}
-                      className="rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
-                    >
-                      {tag}
+                {/* Détails de l'article (Titre, Description & Tags) */}
+                <div className="mt-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
+                      {article.category}
                     </span>
-                  ))}
+                  </div>
+
+                  <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-pink-500 transition-colors line-clamp-1">
+                    {article.title}
+                  </h4>
+
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                    {article.description}
+                  </p>
+
+                  {/* Badges / Tags */}
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {article.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
 
-        {/* Section Inscription Newsletter Nouveautés */}
+        {/* Section Newsletter */}
         <div className="w-full max-w-xl rounded-3xl border border-pink-100 bg-white/80 p-8 text-center shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 dark:bg-pink-950/50">
             <span className="text-2xl">💌</span>
