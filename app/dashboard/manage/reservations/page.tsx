@@ -9,19 +9,25 @@ const LOGIN_URL = "/auth/login";
 
 type ReservationAdmin = {
   id: string;
-  user_nom: string;
-  user_prenom: string;
+  produit_id: string;
+  code_6_chiffres: string;
   produit_nom: string;
   produit_type: string;
-  produit_photo_url?: string | null; // Ajout du champ pour la photo
-  code_6_chiffres: string;
+  produit_taille: string;
+  produit_couleur: string;
+  produit_photo?: string | null; // Champ correct de l'API
+  prix_tickets: number;
   status: string;
+  user_id?: string | null;
+  user_nom?: string | null;
+  user_prenom?: string | null;
   created_at: string;
 };
 
 export default function ManageReservationsPage() {
   const router = useRouter();
   const [reservations, setReservations] = useState<ReservationAdmin[]>([]);
+  const [searchQuery, setSearchQuery] = useState(""); // Barre de recherche
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +47,6 @@ export default function ManageReservationsPage() {
           }
         }
 
-        // Si on n'a pas l'utilisateur en local, on interroge l'API via les cookies
         if (!user) {
           const meRes = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
           if (meRes.ok) {
@@ -51,7 +56,6 @@ export default function ManageReservationsPage() {
           }
         }
 
-        // Si toujours aucun utilisateur connecté, redirection vers le login
         if (!user) {
           window.location.href = LOGIN_URL;
           return;
@@ -59,7 +63,6 @@ export default function ManageReservationsPage() {
 
         const userId = user.id || user.user_id;
 
-        // Requête directe sur /reservations
         const res = await fetch(`${API_URL}/reservations${userId ? `?user_id=${userId}` : ""}`, {
           credentials: "include",
         });
@@ -85,6 +88,22 @@ export default function ManageReservationsPage() {
     init();
   }, []);
 
+  // Filtrage des réservations selon la recherche (par code à 6 chiffres, nom, produit, etc.)
+  const filteredReservations = reservations.filter((r) => {
+    const query = searchQuery.toLowerCase();
+    const code = (r.code_6_chiffres || "").toLowerCase();
+    const nomClient = (r.user_nom || "").toLowerCase();
+    const prenomClient = (r.user_prenom || "").toLowerCase();
+    const nomProduit = (r.produit_nom || "").toLowerCase();
+
+    return (
+      code.includes(query) ||
+      nomClient.includes(query) ||
+      prenomClient.includes(query) ||
+      nomProduit.includes(query)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
       <div className="mx-auto max-w-5xl">
@@ -97,13 +116,26 @@ export default function ManageReservationsPage() {
           </Link>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Gestion des réservations
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Consultez et validez les réservations des clients
-          </p>
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              Gestion des réservations
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Consultez et validez les réservations des clients
+            </p>
+          </div>
+
+          {/* Barre de recherche par numéro / code */}
+          <div className="w-full sm:w-72">
+            <input
+              type="text"
+              placeholder="Rechercher par code (ex: 120020)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
         </div>
 
         {error && (
@@ -116,7 +148,7 @@ export default function ManageReservationsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
               <tr>
-                <th className="px-4 py-3" /> {/* Colonne pour la photo */}
+                <th className="px-4 py-3">Photo</th>
                 <th className="px-4 py-3">Client</th>
                 <th className="px-4 py-3">Article</th>
                 <th className="px-4 py-3">Code</th>
@@ -127,31 +159,39 @@ export default function ManageReservationsPage() {
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Chargement...</td>
+                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">Chargement...</td>
                 </tr>
-              ) : reservations.length === 0 ? (
+              ) : filteredReservations.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Aucune réservation.</td>
+                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">Aucune réservation trouvée.</td>
                 </tr>
               ) : (
-                reservations.map((r, index) => (
+                filteredReservations.map((r, index) => (
                   <tr key={r.id || index} className="text-zinc-700 dark:text-zinc-300">
                     <td className="px-4 py-3">
-                      {r.produit_photo_url ? (
+                      {/* Photo agrandie (w-16 h-16) */}
+                      {r.produit_photo ? (
                         <img
-                          src={r.produit_photo_url}
+                          src={r.produit_photo}
                           alt={r.produit_nom || "Produit"}
-                          className="h-10 w-10 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                          className="h-16 w-16 rounded-xl object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+                        <div className="h-16 w-16 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium">{r.user_nom || "Client"} {r.user_prenom || ""}</td>
-                    <td className="px-4 py-3">{r.produit_nom || "Article"} ({r.produit_type || "-"})</td>
-                    <td className="px-4 py-3 font-mono font-bold text-pink-600">{r.code_6_chiffres || "------"}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {r.user_nom || r.user_prenom ? `${r.user_nom || ""} ${r.user_prenom || ""}` : <span className="text-zinc-400 italic">Non assigné</span>}
+                    </td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">{r.produit_nom || "Article"}</div>
+                      <div className="text-xs text-zinc-500">{r.produit_type || "-"} {r.produit_taille ? `• ${r.produit_taille}` : ""}</div>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-base font-bold text-pink-600">
+                      {r.code_6_chiffres || "------"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
                         {r.status || "Actif"}
                       </span>
                     </td>
