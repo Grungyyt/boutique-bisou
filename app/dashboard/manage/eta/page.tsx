@@ -8,42 +8,95 @@ type EtaStatus = {
   timestamp: string;
 };
 
+// Domaine du backend FastAPI (pas de préfixe /api ici : on tape directement l'API)
+const API_BASE = "https://api.boutique-bisou.vth-mc.fr";
+
 export default function EtaAdminPage() {
   const [status, setStatus] = useState<EtaStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   // Récupère l'état actuel depuis le serveur
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/eta-admin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "get" }),
-        });
+  const fetchStatus = async () => {
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/eta-admin`, {
+        method: "GET",
+        credentials: "include", // envoie le cookie de session admin (bisou_token)
+      });
 
-        const data = await res.json();
-        if (data.success) {
-          setStatus({
-            operational: data.operational,
-            message: data.message,
-            timestamp: data.timestamp || new Date().toISOString(),
-          });
-        }
-      } catch (err) {
-        console.error("Erreur:", err);
-      } finally {
-        setLoading(false);
+      if (res.status === 401) {
+        setError("Vous devez être connecté en tant qu'administrateur pour voir cette page.");
+        return;
       }
-    };
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.detail || "Erreur lors de la récupération du statut.");
+        return;
+      }
 
+      const data = await res.json();
+      setStatus({
+        operational: data.operational,
+        message: data.message || "",
+        timestamp: data.updated_at || data.created_at || new Date().toISOString(),
+      });
+      setMessage(data.message || "");
+    } catch (err) {
+      console.error("Erreur:", err);
+      setError("Impossible de contacter le serveur.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchStatus();
   }, []);
 
   const handleUpdate = async (operational: boolean) => {
-    // Requête direkte au serveur pour mettre à jour la base de données
-    // À implémenter côté serveur (FastAPI ou Node.js)
-    alert(`À implémenter côté serveur : operational = ${operational}`);
+    setUpdating(true);
+    setError(null);
+    try {
+      const defaultMessage = operational
+        ? "Service opérationnel"
+        : "Maintenance préventive en cours";
+
+      const res = await fetch(`${API_BASE}/eta-admin`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operational,
+          message: message.trim() || defaultMessage,
+        }),
+      });
+
+      if (res.status === 401) {
+        setError("Vous devez être connecté en tant qu'administrateur pour faire cette action.");
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.detail || "Erreur lors de la mise à jour du statut.");
+        return;
+      }
+
+      const data = await res.json();
+      setStatus({
+        operational: data.operational,
+        message: data.message || "",
+        timestamp: data.updated_at || new Date().toISOString(),
+      });
+      setMessage(data.message || "");
+    } catch (err) {
+      console.error("Erreur:", err);
+      setError("Impossible de contacter le serveur.");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   if (loading) {
@@ -69,6 +122,13 @@ export default function EtaAdminPage() {
             Contrôlez l'état opérationnel du service
           </p>
         </div>
+
+        {/* Erreur */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+          </div>
+        )}
 
         {/* Current Status Card */}
         <div
@@ -112,12 +172,27 @@ export default function EtaAdminPage() {
           </div>
         </div>
 
+        {/* Message personnalisé */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Message à afficher aux visiteurs
+          </label>
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ex: Maintenance préventive en cours - Environ 2 heures"
+            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50"
+          />
+        </div>
+
         {/* Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Bouton Maintenance */}
           <button
             onClick={() => handleUpdate(false)}
-            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition active:scale-95"
+            disabled={updating}
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition active:scale-95"
           >
             🔧 Passer en MAINTENANCE
           </button>
@@ -125,7 +200,8 @@ export default function EtaAdminPage() {
           {/* Bouton Opérationnel */}
           <button
             onClick={() => handleUpdate(true)}
-            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition active:scale-95"
+            disabled={updating}
+            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition active:scale-95"
           >
             ✓ Passer en OPÉRATIONNEL
           </button>
