@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // Photos et configurations de la pile d'origine
 const IMAGES = [
@@ -40,6 +41,19 @@ interface Produit {
 }
 
 export default function HomePage() {
+  const router = useRouter();
+
+  // --- Vérification de l'état opérationnel du service ---
+  // À l'arrivée sur l'accueil, on passe par /eta-verif qui interroge le serveur.
+  // On mémorise la vérification pour la session en cours afin d'éviter une boucle
+  // infinie (/eta-verif renvoie ici une fois le service confirmé opérationnel).
+  useEffect(() => {
+    const dejaVerifie = sessionStorage.getItem("bisou_eta_checked");
+    if (!dejaVerifie) {
+      router.replace("/eta-verif");
+    }
+  }, [router]);
+
   // --- États pour la pile de cartes originale ---
   const [order, setOrder] = useState<number[]>(IMAGES.map((_, i) => i));
   const [swipingId, setSwipingId] = useState<number | null>(null);
