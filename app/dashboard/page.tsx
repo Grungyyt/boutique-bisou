@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGIN_URL = "/auth/login";
+const VERIF_URL = "/verif";
 
 type Stats = {
   totalProduits: number;
@@ -45,9 +46,12 @@ const MODULES = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAllowed, setIsAllowed] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   // Gestion de l'écran de chargement via sessionStorage
   const [showSplash, setShowSplash] = useState(false);
@@ -60,13 +64,24 @@ export default function DashboardPage() {
     let isMounted = true;
     const startTime = Date.now();
 
-    // Vérification de sessionStorage pour savoir si le splash screen a déjà été vu
-    const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
+    // ÉTAPE 1 : Vérifie que l'utilisateur vient de /verif
+    const checkReferrer = () => {
+      // document.referrer contient la page d'où on vient
+      const referrer = document.referrer;
+      
+      // Vérifie si le referrer contient /verif
+      if (!referrer || !referrer.includes("/verif")) {
+        // Ne vient pas de /verif → redirection
+        if (isMounted) {
+          router.push(VERIF_URL);
+        }
+        return false;
+      }
+      
+      return true;
+    };
 
-    if (!hasSeenSplash) {
-      setShowSplash(true);
-    }
-
+    // ÉTAPE 2 : Récupère les stats si autorisé
     const fetchStats = async () => {
       setLoading(true);
       setError(null);
@@ -79,7 +94,10 @@ export default function DashboardPage() {
         const res = await fetch(requestUrl, { credentials: "include" });
         
         if (res.status === 401) {
-          window.location.href = LOGIN_URL;
+          // Pas authentifié → redirection vers /verif
+          if (isMounted) {
+            router.push(VERIF_URL);
+          }
           return;
         }
 
@@ -105,6 +123,7 @@ export default function DashboardPage() {
           setCurrentRequest(null);
           setLoading(false);
 
+          const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
           if (!hasSeenSplash) {
             // S'assure que le splash dure au moins 4 secondes pour le premier affichage
             const elapsedTime = Date.now() - startTime;
@@ -121,12 +140,42 @@ export default function DashboardPage() {
       }
     };
 
-    fetchStats();
+    // Vérifie le referrer
+    const isAllowedAccess = checkReferrer();
+    
+    if (isAllowedAccess) {
+      if (isMounted) {
+        setIsAllowed(true);
+      }
+      
+      // Vérification de sessionStorage pour le splash screen
+      const hasSeenSplash = sessionStorage.getItem("dashboard_splash_seen");
+      if (!hasSeenSplash) {
+        setShowSplash(true);
+      }
+
+      // Récupère les stats
+      fetchStats();
+    }
+    
+    if (isMounted) {
+      setChecking(false);
+    }
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [router]);
+
+  // Pendant la vérification du referrer, affiche rien
+  if (checking) {
+    return null;
+  }
+
+  // Si pas autorisé, ne rien afficher (redirection en cours)
+  if (!isAllowed) {
+    return null;
+  }
 
   return (
     <>
