@@ -1,8 +1,66 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+
+type EtaResponse = {
+  operational: boolean;
+  message?: string;
+};
+
+const API_ETA_URL = "https://api.boutique-bisou.vth-mc.fr/eta";
+const DEFAULT_MESSAGE =
+  "Nous effectuons actuellement une maintenance préventive. Le service sera bientôt de retour.";
+
 export default function EtaVerifPage() {
-  // Cette page affiche juste le message de maintenance
-  // À implémenter côté serveur : vérifier la base de données et rediriger si operational = true
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const [message, setMessage] = useState(DEFAULT_MESSAGE);
+
+  // Interroge le serveur pour savoir si le service est opérationnel.
+  // - Si operational = true : on marque la vérification comme faite pour la
+  //   session, puis on renvoie vers l'accueil.
+  // - Si operational = false : on reste sur cette page et on affiche le
+  //   message de maintenance renvoyé par le serveur.
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+    try {
+      const res = await fetch(API_ETA_URL, { cache: "no-store" });
+
+      if (res.ok) {
+        const data: EtaResponse = await res.json();
+
+        if (data.operational) {
+          sessionStorage.setItem("bisou_eta_checked", "1");
+          router.replace("/");
+          return;
+        }
+
+        setMessage(data.message || DEFAULT_MESSAGE);
+      }
+    } catch (err) {
+      console.error("Erreur lors de la vérification du statut :", err);
+      // Si le service de statut est injoignable, on laisse passer plutôt que
+      // de bloquer tout le site à cause d'une panne réseau isolée.
+      sessionStorage.setItem("bisou_eta_checked", "1");
+      router.replace("/");
+      return;
+    } finally {
+      setChecking(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    checkStatus();
+  }, [checkStatus]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950 dark:to-rose-900">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950 dark:to-rose-900 px-6">
@@ -17,9 +75,9 @@ export default function EtaVerifPage() {
           Service en maintenance
         </h1>
 
-        {/* Description */}
+        {/* Description (message dynamique renvoyé par le serveur) */}
         <p className="text-lg text-rose-800 dark:text-rose-200 mb-8">
-          Nous effectuons actuellement une maintenance préventive. Le service sera bientôt de retour.
+          {message}
         </p>
 
         {/* Message informatif */}
@@ -29,9 +87,9 @@ export default function EtaVerifPage() {
           </p>
         </div>
 
-        {/* Bouton de réessai */}
+        {/* Bouton de réessai : relance la vérification sans recharger toute la page */}
         <button
-          onClick={() => window.location.reload()}
+          onClick={checkStatus}
           className="px-6 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg transition active:scale-95"
         >
           Réessayer
