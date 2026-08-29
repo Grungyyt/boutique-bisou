@@ -43,6 +43,12 @@ const MODULES = [
     href: "/dashboard/manage/tracker",
     emoji: "📊",
   },
+  {
+    title: "Gestion ETA",
+    description: "Contrôler l'état opérationnel du service (maintenance/opérationnel)",
+    href: "/dashboard/manage/eta",
+    emoji: "⚙️",
+  },
 ];
 
 export default function DashboardPage() {
