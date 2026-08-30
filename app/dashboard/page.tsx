@@ -10,6 +10,7 @@ const VERIF_URL = "/verif";
 type Stats = {
   totalProduits: number;
   totalTickets: number;
+  ticketsEnCirculation: number;
 };
 
 const MODULES = [
@@ -100,12 +101,16 @@ export default function DashboardPage() {
       setFailedRequest(null);
 
       const requestUrl = `${API_URL}/produits`;
+      const ticketsUrl = `${API_URL}/tickets`;
       setCurrentRequest(requestUrl);
 
       try {
-        const res = await fetch(requestUrl, { credentials: "include" });
-        
-        if (res.status === 401) {
+        const [res, ticketsRes] = await Promise.all([
+          fetch(requestUrl, { credentials: "include" }),
+          fetch(ticketsUrl, { credentials: "include" }),
+        ]);
+
+        if (res.status === 401 || ticketsRes.status === 401) {
           // Pas authentifié → redirection vers /verif
           if (isMounted) {
             router.push(VERIF_URL);
@@ -118,11 +123,13 @@ export default function DashboardPage() {
         }
 
         const data = await res.json();
-        
+        const ticketsData = ticketsRes.ok ? await ticketsRes.json() : null;
+
         if (isMounted) {
           setStats({
             totalProduits: data.total ?? (data.produits?.length || 0),
             totalTickets: data.total_tickets || 0,
+            ticketsEnCirculation: ticketsData?.tickets_en_circulation || 0,
           });
         }
       } catch (err: any) {
@@ -260,7 +267,7 @@ export default function DashboardPage() {
             </p>
           )}
 
-          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Total vêtements</p>
               <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -271,6 +278,12 @@ export default function DashboardPage() {
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Valeur totale</p>
               <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
                 {loading ? "…" : stats?.totalTickets ?? 0} 🎟️
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Tickets en circulation</p>
+              <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {loading ? "…" : stats?.ticketsEnCirculation ?? 0} 🎟️
               </p>
             </div>
           </div>
