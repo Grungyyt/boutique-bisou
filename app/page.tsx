@@ -44,12 +44,15 @@ export default function HomePage() {
   const router = useRouter();
 
   // --- Vérification de l'état opérationnel du service ---
-  // À l'arrivée sur l'accueil, on passe par /eta-verif qui interroge le serveur.
-  // On mémorise la vérification pour la session en cours afin d'éviter une boucle
-  // infinie (/eta-verif renvoie ici une fois le service confirmé opérationnel).
+  // À CHAQUE arrivée/reload sur l'accueil, on repasse par /eta-verif qui
+  // interroge le serveur. On garde un très court délai de grâce (quelques
+  // secondes) juste après avoir été confirmé opérationnel par /eta-verif,
+  // pour éviter une boucle infinie entre les deux pages — mais un reload
+  // "normal" (après ce délai) redéclenche bien une nouvelle vérification.
   useEffect(() => {
-    const dejaVerifie = sessionStorage.getItem("bisou_eta_checked");
-    if (!dejaVerifie) {
+    const dernierCheck = Number(sessionStorage.getItem("bisou_eta_checked_at") || 0);
+    const recent = Date.now() - dernierCheck < 3000;
+    if (!recent) {
       router.replace("/eta-verif");
     }
   }, [router]);
