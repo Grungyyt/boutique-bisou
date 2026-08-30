@@ -44,6 +44,12 @@ const MODULES = [
     emoji: "📊",
   },
   {
+    title: "Historique des Ventes",
+    description: "Voir chaque vente en détail : quand, quel article, âge, genre et classe",
+    href: "/dashboard/manage/historique-des-ventes",
+    emoji: "🧾",
+  },
+  {
     title: "Gestion ETA",
     description: "Contrôler l'état opérationnel du service (maintenance/opérationnel)",
     href: "/dashboard/manage/eta",
