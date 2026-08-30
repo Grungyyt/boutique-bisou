@@ -107,7 +107,7 @@ export default function CaissePage() {
 
       // Redirection vers la page de saisie des infos de l'élève pour cette vente
       if (venteId !== null) {
-        router.push(`/manage/caisse/vente?id=${venteId}`);
+        router.push(`/dashboard/manage/caisse/vente?id=${venteId}`);
       }
     } catch {
       addToast(p.nom, false);
