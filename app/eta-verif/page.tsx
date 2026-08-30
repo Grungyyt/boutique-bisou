@@ -31,7 +31,7 @@ export default function EtaVerifPage() {
         const data: EtaResponse = await res.json();
 
         if (data.operational) {
-          sessionStorage.setItem("bisou_eta_checked", "1");
+          sessionStorage.setItem("bisou_eta_checked_at", Date.now().toString());
           router.replace("/");
           return;
         }
@@ -42,7 +42,7 @@ export default function EtaVerifPage() {
       console.error("Erreur lors de la vérification du statut :", err);
       // Si le service de statut est injoignable, on laisse passer plutôt que
       // de bloquer tout le site à cause d'une panne réseau isolée.
-      sessionStorage.setItem("bisou_eta_checked", "1");
+      sessionStorage.setItem("bisou_eta_checked_at", Date.now().toString());
       router.replace("/");
       return;
     } finally {
