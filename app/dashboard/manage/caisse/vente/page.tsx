@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
@@ -17,7 +17,7 @@ type LogVente = {
   created_at?: string;
 };
 
-export default function VenteInfoPage() {
+function VenteInfoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const venteId = searchParams.get("id");
@@ -94,7 +94,7 @@ export default function VenteInfoPage() {
       }
 
       setSaved(true);
-      setTimeout(() => router.push("/manage/caisse"), 900);
+      setTimeout(() => router.push("/dashboard/manage/caisse"), 900);
     } catch {
       setError("Impossible de contacter le serveur.");
     } finally {
@@ -118,7 +118,7 @@ export default function VenteInfoPage() {
       <div className="mx-auto max-w-lg">
         <div className="mb-6">
           <a
-            href="/manage/caisse"
+            href="/dashboard/manage/caisse"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             ← Retour à la caisse
@@ -236,7 +236,7 @@ export default function VenteInfoPage() {
 
                   <button
                     type="button"
-                    onClick={() => router.push("/manage/caisse")}
+                    onClick={() => router.push("/dashboard/manage/caisse")}
                     className="text-center text-xs text-zinc-400 underline hover:text-zinc-600 dark:hover:text-zinc-300"
                   >
                     Passer cette étape
@@ -248,5 +248,19 @@ export default function VenteInfoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VenteInfoPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-pink-600" />
+        </div>
+      }
+    >
+      <VenteInfoContent />
+    </Suspense>
   );
 }
