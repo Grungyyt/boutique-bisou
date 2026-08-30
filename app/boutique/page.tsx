@@ -18,12 +18,119 @@ type Produit = {
   created_at: string;
 };
 
+// ────────────────────────────────────────────────────────────────────────
+// ALGORITHME DE RECOMMANDATION
+// ────────────────────────────────────────────────────────────────────────
+// Principe : à chaque fois qu'une personne consulte un article, on compte
+// +1 pour sa couleur, son type et son genre dans le navigateur (localStorage,
+// anonyme). Plus une caractéristique a été vue souvent, plus les articles qui
+// la partagent (ou qui s'en rapprochent, ex: "gris" ~ "gris foncé") remontent
+// en haut de la boutique.
+
+type ViewCounts = {
+  couleur: Record<string, number>;
+  type: Record<string, number>;
+  genre: Record<string, number>;
+};
+
+const VIEW_STORAGE_KEY = "bisou_view_counts";
+const VIDE: ViewCounts = { couleur: {}, type: {}, genre: {} };
+
+function normalise(v: string | null | undefined): string {
+  return (v || "").trim().toLowerCase();
+}
+
+function loadViewCounts(): ViewCounts {
+  if (typeof window === "undefined") return VIDE;
+  try {
+    const raw = localStorage.getItem(VIEW_STORAGE_KEY);
+    if (!raw) return VIDE;
+    const parsed = JSON.parse(raw);
+    return {
+      couleur: parsed.couleur || {},
+      type: parsed.type || {},
+      genre: parsed.genre || {},
+    };
+  } catch {
+    return VIDE;
+  }
+}
+
+function saveViewCounts(counts: ViewCounts) {
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(counts));
+  } catch {
+    // stockage indisponible (navigation privée, etc.) : on ignore silencieusement
+  }
+}
+
+// Enregistre une consultation : +1 sur la couleur, le type et le genre du produit regardé
+function recordView(produit: Produit, counts: ViewCounts): ViewCounts {
+  const next: ViewCounts = {
+    couleur: { ...counts.couleur },
+    type: { ...counts.type },
+    genre: { ...counts.genre },
+  };
+  const couleur = normalise(produit.couleur);
+  const type = normalise(produit.type);
+  const genre = normalise(produit.genre);
+  if (couleur) next.couleur[couleur] = (next.couleur[couleur] || 0) + 1;
+  if (type) next.type[type] = (next.type[type] || 0) + 1;
+  if (genre) next.genre[genre] = (next.genre[genre] || 0) + 1;
+  saveViewCounts(next);
+  return next;
+}
+
+// Similarité entre une caractéristique déjà vue et celle d'un produit :
+// - identique → poids plein (1)
+// - l'une contient l'autre, ex: "gris" est inclus dans "gris foncé" → poids partiel (0.5)
+// - rien en commun → 0
+function similarite(valeurProduit: string, valeurVue: string): number {
+  if (!valeurProduit || !valeurVue) return 0;
+  if (valeurProduit === valeurVue) return 1;
+  if (valeurProduit.includes(valeurVue) || valeurVue.includes(valeurProduit)) return 0.5;
+  return 0;
+}
+
+// Score de recommandation d'un produit selon l'historique de consultation.
+// La couleur pèse le plus (demande explicite : "10 pantalons gris vs 1 vert
+// → proposer plus de gris ET de couleurs ressemblantes"), puis le type,
+// puis le genre en dernier.
+function scoreProduit(p: Produit, counts: ViewCounts): number {
+  const couleur = normalise(p.couleur);
+  const type = normalise(p.type);
+  const genre = normalise(p.genre);
+
+  let score = 0;
+  for (const [c, n] of Object.entries(counts.couleur)) {
+    score += 3 * n * similarite(couleur, c);
+  }
+  for (const [t, n] of Object.entries(counts.type)) {
+    score += 2 * n * similarite(type, t);
+  }
+  for (const [g, n] of Object.entries(counts.genre)) {
+    score += 1 * n * similarite(genre, g);
+  }
+  return score;
+}
+
 export default function BoutiquePage() {
   const [produits, setProduits] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [reservingId, setReservingId] = useState<string | null>(null);
+  const [viewCounts, setViewCounts] = useState<ViewCounts>(VIDE);
+
+  // Charge l'historique de consultation stocké localement
+  useEffect(() => {
+    setViewCounts(loadViewCounts());
+  }, []);
+
+  // Appelé quand on clique sur un article pour le consulter
+  const handleView = (p: Produit) => {
+    setViewCounts((prev) => recordView(p, prev));
+  };
 
   useEffect(() => {
     const fetchProduits = async () => {
@@ -52,14 +159,38 @@ export default function BoutiquePage() {
 
   const resultats = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return produits;
+    const filtres = q
+      ? produits.filter((p) =>
+          [p.nom, p.couleur, p.type, p.genre, p.taille]
+            .filter(Boolean)
+            .some((champ) => champ.toLowerCase().includes(q))
+        )
+      : produits;
 
-    return produits.filter((p) =>
-      [p.nom, p.couleur, p.type, p.genre, p.taille]
-        .filter(Boolean)
-        .some((champ) => champ.toLowerCase().includes(q))
-    );
-  }, [produits, search]);
+    const aDeLHistorique =
+      Object.keys(viewCounts.couleur).length > 0 ||
+      Object.keys(viewCounts.type).length > 0 ||
+      Object.keys(viewCounts.genre).length > 0;
+
+    // Sans historique de consultation : ordre d'origine (le plus récent d'abord)
+    if (!aDeLHistorique) {
+      return filtres.map((p) => ({ produit: p, recommande: false }));
+    }
+
+    // Avec historique : on classe par score de recommandation décroissant.
+    // Array.prototype.sort est stable en JS moderne, donc à score égal
+    // l'ordre d'origine est conservé.
+    const classes = filtres
+      .map((p) => ({ produit: p, score: scoreProduit(p, viewCounts) }))
+      .sort((a, b) => b.score - a.score);
+
+    return classes.map((item, idx) => ({
+      produit: item.produit,
+      // On met en avant les 4 meilleurs résultats seulement s'ils ont un vrai
+      // lien avec l'historique (score > 0), pour ne pas sur-étiqueter la grille
+      recommande: item.score > 0 && idx < 4,
+    }));
+  }, [produits, search, viewCounts]);
 
   const handleReserve = async (produitId: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -167,16 +298,23 @@ export default function BoutiquePage() {
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {resultats.map((p) => (
+            {resultats.map(({ produit: p, recommande }) => (
               <div
                 key={p.id}
-                className={`group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
                   p.quantite === 0 ? "opacity-60" : ""
                 }`}
               >
+                {recommande && (
+                  <span className="absolute left-3 top-3 z-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
+                    ✨ Pour toi
+                  </span>
+                )}
+
                 {/* Lien vers la vue de l'article /boutique/view?id=... */}
                 <Link
                   href={`/boutique/view?id=${p.id}`}
+                  onClick={() => handleView(p)}
                   className="block flex-1 cursor-pointer"
                 >
                   <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
