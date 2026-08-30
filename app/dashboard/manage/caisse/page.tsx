@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
 
@@ -23,6 +24,7 @@ type Toast = {
 };
 
 export default function CaissePage() {
+  const router = useRouter();
   const [produits, setProduits] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,24 +68,34 @@ export default function CaissePage() {
 
       if (!res.ok) throw new Error();
 
-      // Log de la vente
-      fetch(`${API_URL}/logs`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "vente",
-          produit_id: p.id,
-          produit_nom: p.nom,
-          details: JSON.stringify({
-            prix_tickets: p.prix_tickets,
-            stock_avant: p.quantite,
-            stock_apres: p.quantite - 1,
-            taille: p.taille,
-            couleur: p.couleur,
+      // Log de la vente : on attend la réponse pour récupérer l'id créé,
+      // qui sert ensuite à identifier la vente sur la page de saisie des infos élève.
+      let venteId: string | number | null = null;
+      try {
+        const logRes = await fetch(`${API_URL}/logs`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "vente",
+            produit_id: p.id,
+            produit_nom: p.nom,
+            details: JSON.stringify({
+              prix_tickets: p.prix_tickets,
+              stock_avant: p.quantite,
+              stock_apres: p.quantite - 1,
+              taille: p.taille,
+              couleur: p.couleur,
+            }),
           }),
-        }),
-      }).catch(() => {}); // silencieux si le log échoue
+        });
+        if (logRes.ok) {
+          const logData = await logRes.json();
+          venteId = logData?.id ?? null;
+        }
+      } catch {
+        // silencieux si le log échoue : la vente reste enregistrée côté stock
+      }
 
       // Mise à jour locale immédiate
       setProduits((prev) =>
@@ -92,6 +104,11 @@ export default function CaissePage() {
         )
       );
       addToast(p.nom, true);
+
+      // Redirection vers la page de saisie des infos de l'élève pour cette vente
+      if (venteId !== null) {
+        router.push(`/manage/caisse/vente?id=${venteId}`);
+      }
     } catch {
       addToast(p.nom, false);
     } finally {
