@@ -76,14 +76,12 @@ export default function EtaVerifPage() {
       setMessage(messageAAfficher);
       setChecking(false);
 
-      // Redirection vers la page de statut externe (vth-mc.fr/non-ope),
-      // avec le site concerné et le pic de visiteurs en query params.
+      // Redirection vers la page de statut externe (vth-mc.fr/no-ope?web=https://boutique-bisou.vth-mc.fr)
       setRedirecting(true);
       const params = new URLSearchParams({
-        web: SITE_URL,
         number: String(picVisiteurs ?? 0),
       });
-      window.location.href = `${NON_OPE_URL}?${params.toString()}`;
+      window.location.href = `${NON_OPE_URL}&${params.toString()}`;
     } catch (err) {
       console.error("Erreur lors de la vérification du statut :", err);
       sessionStorage.setItem("bisou_eta_checked_at", Date.now().toString());
