@@ -19,7 +19,7 @@ type OsaResponse = {
 const API_ETA_URL = "https://api.boutique-bisou.vth-mc.fr/eta";
 const API_OSA_URL = "https://api.boutique-bisou.vth-mc.fr/osa";
 const SITE_URL = "https://boutique-bisou.vth-mc.fr";
-const NON_OPE_URL = "https://www.vth-mc.fr/non-ope";
+const NON_OPE_URL = "https://www.vth-mc.fr/no-ope?web=https://boutique-bisou.vth-mc.fr";
 const DEFAULT_MESSAGE =
   "Nous effectuons actuellement une maintenance préventive. Le service sera bientôt de retour.";
 
