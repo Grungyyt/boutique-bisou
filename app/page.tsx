@@ -53,7 +53,7 @@ export default function HomePage() {
     const dernierCheck = Number(sessionStorage.getItem("bisou_eta_checked_at") || 0);
     const recent = Date.now() - dernierCheck < 3000;
     if (!recent) {
-      router.replace("/eta-verif");
+      router.replace("/osa");
     }
   }, [router]);
 
