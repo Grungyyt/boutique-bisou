@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import OsaStatusBadge from "./OsaStatusBadge";
 
 // Variable CLIENT corrigée
 const CLIENT = "Collège Pierre Dubois";
@@ -112,6 +113,9 @@ export default function RootLayout({
               Site créé pour <span className="text-white font-medium">{CLIENT}</span>
             </p>
           </div>
+
+          {/* Statut OSA (Operating Système Alerte) */}
+          <OsaStatusBadge />
 
         </footer>
       </body>
