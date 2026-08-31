@@ -6,16 +6,20 @@ import { useRouter } from "next/navigation";
 type EtaResponse = {
   operational: boolean;
   message?: string;
+  pic_visiteurs?: number | null;
 };
 
 type OsaResponse = {
   status: string; // "operationnel" | "ralentissement_leger" | "degrade" | "extremement_degrade"
   label?: string;
   message?: string;
+  pic_visiteurs?: number | null;
 };
 
 const API_ETA_URL = "https://api.boutique-bisou.vth-mc.fr/eta";
 const API_OSA_URL = "https://api.boutique-bisou.vth-mc.fr/osa";
+const SITE_URL = "https://boutique-bisou.vth-mc.fr";
+const NON_OPE_URL = "https://www.vth-mc.fr/non-ope";
 const DEFAULT_MESSAGE =
   "Nous effectuons actuellement une maintenance préventive. Le service sera bientôt de retour.";
 
@@ -27,11 +31,12 @@ export default function EtaVerifPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
+  const [redirecting, setRedirecting] = useState(false);
 
-  // Vérifie les DEUX systèmes en parallèle :
-  // - l'ancien ETA (booléen operational/maintenance)
-  // - le nouveau OSA (4 niveaux)
-  // Le site est bloqué si L'UN DES DEUX indique un problème bloquant.
+  // Vérifie les DEUX systèmes en parallèle (ETA booléen + OSA 4 niveaux).
+  // Si l'un des deux bloque, on redirige le navigateur vers la page de statut
+  // externe hébergée sur vth-mc.fr, avec le site concerné et le pic de
+  // visiteurs enregistré au moment de la panne/maintenance.
   const checkStatus = useCallback(async () => {
     setChecking(true);
     try {
@@ -40,40 +45,50 @@ export default function EtaVerifPage() {
         fetch(API_OSA_URL, { cache: "no-store" }),
       ]);
 
-      let etaBloque = false;
-      let osaBloque = false;
+      let bloque = false;
       let messageAAfficher = DEFAULT_MESSAGE;
+      let picVisiteurs: number | null = null;
 
       if (etaRes.status === "fulfilled" && etaRes.value.ok) {
         const data: EtaResponse = await etaRes.value.json();
         if (!data.operational) {
-          etaBloque = true;
+          bloque = true;
           messageAAfficher = data.message || DEFAULT_MESSAGE;
+          picVisiteurs = data.pic_visiteurs ?? null;
         }
       }
 
       if (osaRes.status === "fulfilled" && osaRes.value.ok) {
         const data: OsaResponse = await osaRes.value.json();
         if (data.status === NIVEAU_OSA_BLOQUANT) {
-          osaBloque = true;
+          bloque = true;
           messageAAfficher = data.message || DEFAULT_MESSAGE;
+          picVisiteurs = data.pic_visiteurs ?? picVisiteurs;
         }
       }
 
-      if (!etaBloque && !osaBloque) {
+      if (!bloque) {
         sessionStorage.setItem("bisou_eta_checked_at", Date.now().toString());
         router.replace("/");
         return;
       }
 
       setMessage(messageAAfficher);
+      setChecking(false);
+
+      // Redirection vers la page de statut externe (vth-mc.fr/non-ope),
+      // avec le site concerné et le pic de visiteurs en query params.
+      setRedirecting(true);
+      const params = new URLSearchParams({
+        web: SITE_URL,
+        number: String(picVisiteurs ?? 0),
+      });
+      window.location.href = `${NON_OPE_URL}?${params.toString()}`;
     } catch (err) {
       console.error("Erreur lors de la vérification du statut :", err);
       sessionStorage.setItem("bisou_eta_checked_at", Date.now().toString());
       router.replace("/");
       return;
-    } finally {
-      setChecking(false);
     }
   }, [router]);
 
@@ -81,7 +96,7 @@ export default function EtaVerifPage() {
     checkStatus();
   }, [checkStatus]);
 
-  if (checking) {
+  if (checking || redirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950 dark:to-rose-900">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600" />
@@ -89,6 +104,8 @@ export default function EtaVerifPage() {
     );
   }
 
+  // Page affichée brièvement pendant la redirection, ou si la redirection
+  // JS échoue pour une raison quelconque (fallback local).
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950 dark:to-rose-900 px-6">
       <div className="text-center max-w-md">
