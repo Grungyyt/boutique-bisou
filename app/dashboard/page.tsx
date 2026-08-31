@@ -51,9 +51,9 @@ const MODULES = [
     emoji: "🧾",
   },
   {
-    title: "Gestion ETA",
-    description: "Contrôler l'état opérationnel du service (maintenance/opérationnel)",
-    href: "/dashboard/manage/eta",
+    title: "Gestion OSA",
+    description: "Contrôler le niveau d'état du service (Operating Système Alerte, 4 niveaux)",
+    href: "/dashboard/manage/osa",
     emoji: "⚙️",
   },
 ];
