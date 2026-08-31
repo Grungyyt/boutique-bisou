@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import OsaStatusBadge from "./OsaStatusBadge";
+import VisitTracker from "./VisitTracker";
 
 // Variable CLIENT corrigée
 const CLIENT = "Collège Pierre Dubois";
@@ -32,6 +33,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#313338] text-white">
+        <VisitTracker />
         
         <main className="flex-1">
           {children}
