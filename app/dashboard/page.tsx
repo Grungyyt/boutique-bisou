@@ -51,8 +51,8 @@ const MODULES = [
     emoji: "🧾",
   },
   {
-    title: "Gestion OSA",
-    description: "Contrôler le niveau d'état du service (Operating Système Alerte, 4 niveaux)",
+    title: "Gestion OSA & ETA",
+    description: "Contrôler le statut du service : niveau OSA (4 niveaux) et bascule ETA (maintenance ON/OFF)",
     href: "/dashboard/manage/osa",
     emoji: "⚙️",
   },
