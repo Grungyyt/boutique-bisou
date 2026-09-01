@@ -192,14 +192,13 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Container principal style Glassmorphism identique aux pages légales */}
-      <div className="flex flex-col items-center gap-16 rounded-2xl border border-zinc-200/80 bg-white/80 p-6 md:p-12 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
+      <div className="flex flex-col items-center gap-20">
         
-        {/* --- SECTION HERO : TEXTE + PILE DE PHOTOS ORIGINALE --- */}
-        <div className="flex w-full flex-col items-center justify-between gap-10 lg:flex-row lg:gap-12">
+        {/* --- SECTION HERO DIRECTEMENT SUR LE FOND --- */}
+        <div className="flex w-full flex-col items-center justify-between gap-12 lg:flex-row lg:px-4">
           {/* Texte d'intro */}
           <div className="max-w-md text-center lg:text-left">
-            <div className="mb-8 flex justify-center lg:justify-start">
+            <div className="mb-6 flex justify-center lg:justify-start">
               <img
                 src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
                 alt="Logo Boutique Bisou"
@@ -207,7 +206,7 @@ export default function HomePage() {
               />
             </div>
 
-            <span className="mb-4 inline-block rounded-lg bg-pink-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-pink-500">
+            <span className="mb-4 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
               Boutique Bisou
             </span>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-5xl">
@@ -227,13 +226,13 @@ export default function HomePage() {
               </a>
               <a
                 href="/equipe"
-                className="inline-block rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
               >
                 Voir l'Équipe
               </a>
               <a
                 href="/verif"
-                className="inline-block rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
               >
                 Tableau de bord
               </a>
@@ -241,7 +240,7 @@ export default function HomePage() {
                 href="https://ko-fi.com/vth"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
               >
                 <img
                   src="https://storage.vth-mc.fr/img/web/marche.gif"
@@ -254,108 +253,108 @@ export default function HomePage() {
           </div>
 
           {/* Pile de photos originale */}
-          <div
-            className="relative h-[480px] w-[310px] shrink-0 sm:h-[540px] sm:w-[350px]"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-          >
-            {order.map((imgIndex, pos) => {
-              const isFront = pos === 0;
-              const isSwiping = swipingId === imgIndex;
+          <div className="flex items-center justify-center lg:pr-6">
+            <div
+              className="relative h-[480px] w-[300px] shrink-0 sm:h-[520px] sm:w-[340px]"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
+              {order.map((imgIndex, pos) => {
+                const isFront = pos === 0;
+                const isSwiping = swipingId === imgIndex;
 
-              const depth = isSwiping ? 0 : pos;
-              const baseRotate = ROT_JITTER[imgIndex];
-              const stackRotate =
-                depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
-              const translateY = depth * 14;
-              const scale = 1 - depth * 0.055;
+                const depth = isSwiping ? 0 : pos;
+                const baseRotate = ROT_JITTER[imgIndex];
+                const stackRotate =
+                  depth === 0 ? 0 : baseRotate * (0.55 + depth * 0.18);
+                const translateY = depth * 14;
+                const scale = 1 - depth * 0.055;
 
-              const transform = isSwiping
-                ? `translate(135%, -10%) rotate(${28 + baseRotate}deg) scale(0.92)`
-                : `translateY(${translateY}px) rotate(${stackRotate}deg) scale(${scale})`;
+                const transform = isSwiping
+                  ? `translate(120%, -10%) rotate(${28 + baseRotate}deg) scale(0.92)`
+                  : `translateY(${translateY}px) rotate(${stackRotate}deg) scale(${scale})`;
 
-              return (
-                <div
-                  key={imgIndex}
-                  className="absolute inset-0"
-                  style={{
-                    zIndex: 50 - pos,
-                    transform,
-                    opacity: isSwiping ? 0 : 1,
-                    transition: isSwiping
-                      ? `transform ${SWIPE_MS}ms cubic-bezier(.45,0,.55,1), opacity ${SWIPE_MS}ms ease-out`
-                      : `transform ${SETTLE_MS}ms cubic-bezier(.22,1,.36,1), opacity 250ms ease-out`,
-                    willChange: "transform, opacity",
-                  }}
-                >
-                  <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5">
-                    <img
-                      src={IMAGES[imgIndex]}
-                      alt={`Vêtement ${imgIndex + 1}`}
-                      className="h-full w-full object-cover"
-                      draggable={false}
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+                return (
+                  <div
+                    key={imgIndex}
+                    className="absolute inset-0"
+                    style={{
+                      zIndex: 50 - pos,
+                      transform,
+                      opacity: isSwiping ? 0 : 1,
+                      transition: isSwiping
+                        ? `transform ${SWIPE_MS}ms cubic-bezier(.45,0,.55,1), opacity ${SWIPE_MS}ms ease-out`
+                        : `transform ${SETTLE_MS}ms cubic-bezier(.22,1,.36,1), opacity 250ms ease-out`,
+                      willChange: "transform, opacity",
+                    }}
+                  >
+                    <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
+                      <img
+                        src={IMAGES[imgIndex]}
+                        alt={`Vêtement ${imgIndex + 1}`}
+                        className="h-full w-full object-cover"
+                        draggable={false}
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
 
-                    {isFront && (
-                      <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
-                        <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm animate-pulse" />
-                      </div>
-                    )}
+                      {isFront && (
+                        <div className="absolute left-3 top-3 flex h-5 w-9 items-center rounded-full bg-white/25 px-0.5 backdrop-blur-sm">
+                          <span className="h-4 w-4 rounded-full bg-emerald-400 shadow-sm animate-pulse" />
+                        </div>
+                      )}
 
-                    {isFront && (
-                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 max-w-[80%]">
-                        {TAGS[imgIndex].map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
+                      {isFront && (
+                        <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 max-w-[80%]">
+                          {TAGS[imgIndex].map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {isFront && !isSwiping && (
+                        <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {isFront && !isSwiping && (
-                      <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M7 17 17 7M9 7h8v8" />
-                        </svg>
-                      </div>
-                    )}
+                            <path d="M7 17 17 7M9 7h8v8" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
-              {IMAGES.map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    order[0] === i
-                      ? "w-5 bg-pink-500"
-                      : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
-                  }`}
-                />
-              ))}
+              <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {IMAGES.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      order[0] === i
+                        ? "w-5 bg-pink-500"
+                        : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        <hr className="w-full border-zinc-200/80 dark:border-zinc-800/80" />
-
-        {/* --- SECTION CARROUSEL (ARTICLES API) --- */}
-        <div className="w-full flex flex-col items-center gap-6">
+        {/* --- SECTION CARROUSEL (ARTICLES API) EN GLASSMORPHISME --- */}
+        <div className="w-full flex flex-col items-center gap-6 rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
           <div className="text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               Nos T-Shirts & Articles en rayon
@@ -366,8 +365,8 @@ export default function HomePage() {
           </div>
 
           <div className="relative w-full overflow-hidden py-2">
-            <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-12 bg-gradient-to-r from-white/90 to-transparent dark:from-zinc-950/90" />
-            <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-12 bg-gradient-to-l from-white/90 to-transparent dark:from-zinc-950/90" />
+            <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-12 bg-gradient-to-r from-white/80 to-transparent dark:from-zinc-950/80" />
+            <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-12 bg-gradient-to-l from-white/80 to-transparent dark:from-zinc-950/80" />
 
             {loadingProduits ? (
               <div className="flex justify-center gap-6 py-6">
@@ -384,9 +383,9 @@ export default function HomePage() {
                   <a
                     key={`${item.id}-${idx}`}
                     href="/boutique"
-                    className="group flex w-[270px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/50"
+                    className="group flex w-[270px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/80"
                   >
-                    <div className="relative h-52 w-full overflow-hidden rounded-xl bg-zinc-200/60 dark:bg-zinc-800/60">
+                    <div className="relative h-52 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
                       <img
                         src={item.photo_url}
                         alt={item.nom}
@@ -432,12 +431,12 @@ export default function HomePage() {
 
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         {item.genre && (
-                          <span className="rounded-md bg-zinc-200/50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300">
+                          <span className="rounded-md bg-zinc-100/80 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-300">
                             {item.genre}
                           </span>
                         )}
                         {item.couleur && (
-                          <span className="rounded-md bg-zinc-200/50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300">
+                          <span className="rounded-md bg-zinc-100/80 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-300">
                             Couleur : {item.couleur}
                           </span>
                         )}
@@ -454,10 +453,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <hr className="w-full border-zinc-200/80 dark:border-zinc-800/80" />
-
-        {/* --- SECTION NEWSLETTER --- */}
-        <div className="w-full max-w-xl rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-6 md:p-8 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/50">
+        {/* --- SECTION NEWSLETTER EN GLASSMORPHISME --- */}
+        <div className="w-full max-w-xl rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500">
             <span className="text-xl">💌</span>
           </div>
@@ -475,7 +472,7 @@ export default function HomePage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="votre.email@exemple.com"
-              className="w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2.5 text-xs text-zinc-900 outline-none transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-800/80 dark:bg-zinc-950 dark:text-zinc-100"
+              className="w-full rounded-xl border border-zinc-200/80 bg-white/80 px-4 py-2.5 text-xs text-zinc-900 outline-none transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-100"
             />
             <button
               type="submit"
