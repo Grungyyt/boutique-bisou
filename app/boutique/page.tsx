@@ -21,11 +21,6 @@ type Produit = {
 // ────────────────────────────────────────────────────────────────────────
 // ALGORITHME DE RECOMMANDATION
 // ────────────────────────────────────────────────────────────────────────
-// Principe : à chaque fois qu'une personne consulte un article, on compte
-// +1 pour sa couleur, son type et son genre dans le navigateur (localStorage,
-// anonyme). Plus une caractéristique a été vue souvent, plus les articles qui
-// la partagent (ou qui s'en rapprochent, ex: "gris" ~ "gris foncé") remontent
-// en haut de la boutique.
 
 type ViewCounts = {
   couleur: Record<string, number>;
@@ -60,11 +55,10 @@ function saveViewCounts(counts: ViewCounts) {
   try {
     localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(counts));
   } catch {
-    // stockage indisponible (navigation privée, etc.) : on ignore silencieusement
+    // stockage indisponible (navigation privée, etc.)
   }
 }
 
-// Enregistre une consultation : +1 sur la couleur, le type et le genre du produit regardé
 function recordView(produit: Produit, counts: ViewCounts): ViewCounts {
   const next: ViewCounts = {
     couleur: { ...counts.couleur },
@@ -81,10 +75,6 @@ function recordView(produit: Produit, counts: ViewCounts): ViewCounts {
   return next;
 }
 
-// Similarité entre une caractéristique déjà vue et celle d'un produit :
-// - identique → poids plein (1)
-// - l'une contient l'autre, ex: "gris" est inclus dans "gris foncé" → poids partiel (0.5)
-// - rien en commun → 0
 function similarite(valeurProduit: string, valeurVue: string): number {
   if (!valeurProduit || !valeurVue) return 0;
   if (valeurProduit === valeurVue) return 1;
@@ -92,10 +82,6 @@ function similarite(valeurProduit: string, valeurVue: string): number {
   return 0;
 }
 
-// Score de recommandation d'un produit selon l'historique de consultation.
-// La couleur pèse le plus (demande explicite : "10 pantalons gris vs 1 vert
-// → proposer plus de gris ET de couleurs ressemblantes"), puis le type,
-// puis le genre en dernier.
 function scoreProduit(p: Produit, counts: ViewCounts): number {
   const couleur = normalise(p.couleur);
   const type = normalise(p.type);
@@ -122,12 +108,10 @@ export default function BoutiquePage() {
   const [reservingId, setReservingId] = useState<string | null>(null);
   const [viewCounts, setViewCounts] = useState<ViewCounts>(VIDE);
 
-  // Charge l'historique de consultation stocké localement
   useEffect(() => {
     setViewCounts(loadViewCounts());
   }, []);
 
-  // Appelé quand on clique sur un article pour le consulter
   const handleView = (p: Produit) => {
     setViewCounts((prev) => recordView(p, prev));
   };
@@ -172,22 +156,16 @@ export default function BoutiquePage() {
       Object.keys(viewCounts.type).length > 0 ||
       Object.keys(viewCounts.genre).length > 0;
 
-    // Sans historique de consultation : ordre d'origine (le plus récent d'abord)
     if (!aDeLHistorique) {
       return filtres.map((p) => ({ produit: p, recommande: false }));
     }
 
-    // Avec historique : on classe par score de recommandation décroissant.
-    // Array.prototype.sort est stable en JS moderne, donc à score égal
-    // l'ordre d'origine est conservé.
     const classes = filtres
       .map((p) => ({ produit: p, score: scoreProduit(p, viewCounts) }))
       .sort((a, b) => b.score - a.score);
 
     return classes.map((item, idx) => ({
       produit: item.produit,
-      // On met en avant les 4 meilleurs résultats seulement s'ils ont un vrai
-      // lien avec l'historique (score > 0), pour ne pas sur-étiqueter la grille
       recommande: item.score > 0 && idx < 4,
     }));
   }, [produits, search, viewCounts]);
@@ -221,13 +199,13 @@ export default function BoutiquePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
-      <div className="mx-auto max-w-6xl">
+    <div className="relative mx-auto max-w-6xl px-4 py-8 md:py-16">
+      <div>
         {/* Retour à l'accueil */}
         <div className="mb-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             ← Retour à l'accueil
           </Link>
@@ -238,7 +216,7 @@ export default function BoutiquePage() {
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
             La boutique
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Tous les articles disponibles, réservables en 1 clic
           </p>
         </div>
@@ -263,11 +241,11 @@ export default function BoutiquePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher (nom, couleur, type, genre, taille...)"
-              className="w-full rounded-lg border border-zinc-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+              className="w-full rounded-xl border border-zinc-200/80 bg-white/80 py-2.5 pl-9 pr-3 text-sm text-zinc-900 outline-none backdrop-blur-md transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-800/80 dark:bg-zinc-950/80 dark:text-zinc-50"
             />
           </div>
           {!loading && (
-            <p className="mt-2 text-xs text-zinc-400">
+            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
               {resultats.length} article{resultats.length > 1 ? "s" : ""}
               {search.trim() ? ` pour « ${search.trim()} »` : ""}
             </p>
@@ -275,7 +253,7 @@ export default function BoutiquePage() {
         </div>
 
         {error && (
-          <p className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+          <p className="mb-4 rounded-xl border border-rose-200/80 bg-rose-50/80 px-4 py-2.5 text-sm font-medium text-rose-600 backdrop-blur-md dark:border-rose-900/80 dark:bg-rose-950/40 dark:text-rose-400">
             {error}
           </p>
         )}
@@ -286,12 +264,12 @@ export default function BoutiquePage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-[3/4] animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-900"
+                className="aspect-[3/4] animate-pulse rounded-2xl bg-white/40 dark:bg-zinc-900/40"
               />
             ))}
           </div>
         ) : resultats.length === 0 ? (
-          <p className="rounded-2xl border border-zinc-200 bg-white px-6 py-12 text-center text-sm text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950">
+          <p className="rounded-2xl border border-zinc-200/80 bg-white/80 px-6 py-12 text-center text-sm text-zinc-500 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 dark:text-zinc-400">
             {search.trim()
               ? "Aucun article ne correspond à ta recherche."
               : "Aucun article pour le moment."}
@@ -301,7 +279,7 @@ export default function BoutiquePage() {
             {resultats.map(({ produit: p, recommande }) => (
               <div
                 key={p.id}
-                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 ${
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/80 shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-950/80 ${
                   p.quantite === 0 ? "opacity-60" : ""
                 }`}
               >
@@ -311,13 +289,13 @@ export default function BoutiquePage() {
                   </span>
                 )}
 
-                {/* Lien vers la vue de l'article /boutique/view?id=... */}
+                {/* Lien vers la vue de l'article */}
                 <Link
                   href={`/boutique/view?id=${p.id}`}
                   onClick={() => handleView(p)}
                   className="block flex-1 cursor-pointer"
                 >
-                  <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                  <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100/80 dark:bg-zinc-900/80">
                     {p.photo_url ? (
                       <img
                         src={p.photo_url}
@@ -331,7 +309,7 @@ export default function BoutiquePage() {
                     )}
                   </div>
                   <div className="p-3">
-                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50 group-hover:text-pink-600 transition">
+                    <p className="truncate text-sm font-semibold text-zinc-900 transition group-hover:text-pink-600 dark:text-zinc-50 dark:group-hover:text-pink-400">
                       {p.nom}
                     </p>
                     <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -342,11 +320,11 @@ export default function BoutiquePage() {
                         {p.prix_tickets} 🎟️
                       </span>
                       {p.quantite === 0 ? (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                        <span className="rounded-full bg-rose-100/80 px-2 py-0.5 text-[10px] font-medium text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
                           Rupture
                         </span>
                       ) : (
-                        <span className="text-[11px] text-zinc-400">
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                           {p.quantite} en stock
                         </span>
                       )}
@@ -360,7 +338,7 @@ export default function BoutiquePage() {
                     type="button"
                     disabled={p.quantite <= 0 || reservingId === p.id}
                     onClick={(e) => handleReserve(p.id, e)}
-                    className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 py-2 text-xs font-bold text-white shadow transition hover:opacity-95 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2 text-xs font-bold text-white shadow-md transition hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {reservingId === p.id
                       ? "Réservation..."
