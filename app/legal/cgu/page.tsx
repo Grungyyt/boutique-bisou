@@ -46,10 +46,19 @@ export default function CGUPage() {
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            2. Accès au site et création de compte
+            2. Accès au site et public autorisé
           </h2>
           <p>
-            L'accès au site est réservé aux élèves, personnels et partenaires autorisés. Certains espaces nécessitent une connexion via un compte utilisateur. Vos identifiants sont strictement personnels et confidentiels.
+            L'accès à la plateforme est strictement réservé aux catégories d'utilisateurs suivantes :
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Personnels du Collège Pierre Dubois.</li>
+            <li>Élèves inscrits au sein de l'établissement.</li>
+            <li>Parents d'élèves titulaires d'un compte.</li>
+            <li>Partenaires dûment autorisés au sein de <strong>Laval Agglomération</strong>.</li>
+          </ul>
+          <p className="mt-2">
+            Certains espaces nécessitent une authentification. Vos identifiants sont strictement personnels et confidentiels.
           </p>
         </section>
 
