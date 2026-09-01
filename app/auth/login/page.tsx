@@ -70,7 +70,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100">
+    <div className="relative h-dvh w-full overflow-hidden bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100">
       {/* Halo de lumière d'arrière-plan */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-pink-500/20 via-rose-500/20 to-amber-400/10 blur-[100px]" />
 
@@ -84,25 +84,24 @@ export default function LoginPage() {
       )}
 
       {/* Layout Fullscreen */}
-      <div className="flex h-full w-full flex-col">
-
+      <div className="flex h-full w-full flex-col justify-between">
         {/* Zone de contenu central */}
-        <main className="relative flex-1">
+        <main className="relative flex-1 overflow-hidden">
           {/* VUE 1 : LOGIN */}
           <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-in-out md:flex-row ${
+            className={`absolute inset-0 flex h-full w-full flex-col md:flex-row transition-all duration-500 ease-in-out ${
               activeTab === "login"
                 ? "pointer-events-auto opacity-100 translate-x-0"
                 : "pointer-events-none opacity-0 -translate-x-4"
             }`}
           >
             {/* Panneau visuel (Gauche) */}
-            <div className="relative flex flex-col justify-between p-12 md:w-1/2 md:p-20">
+            <div className="relative flex flex-1 flex-col justify-between p-6 md:p-12 lg:p-20">
               <div className="my-auto max-w-sm">
                 <span className="text-xs font-semibold uppercase tracking-widest text-pink-500">
                   Authentification
                 </span>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">
                   Se connecter
                 </h1>
                 <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
@@ -116,14 +115,13 @@ export default function LoginPage() {
             </div>
 
             {/* Formulaire (Droit) */}
-            <div className="flex flex-1 flex-col justify-center p-8 md:p-20 md:w-1/2">
+            <div className="flex flex-1 flex-col justify-center p-6 md:p-12 lg:p-20">
               <div className="relative mx-auto w-full max-w-xs">
-                {/* Glow subtil en dégradé d'origine */}
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 opacity-15 blur transition duration-500" />
 
                 <form
                   onSubmit={handleSubmit}
-                  className="relative w-full rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80"
+                  className="relative w-full rounded-2xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80"
                 >
                   <div className="space-y-4">
                     <div>
@@ -194,17 +192,17 @@ export default function LoginPage() {
 
           {/* VUE 2 : SESSION */}
           <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-in-out md:flex-row ${
+            className={`absolute inset-0 flex h-full w-full flex-col md:flex-row transition-all duration-500 ease-in-out ${
               activeTab === "session"
                 ? "pointer-events-auto opacity-100 translate-x-0"
                 : "pointer-events-none opacity-0 translate-x-4"
             }`}
           >
             {/* Action Session (Gauche) */}
-            <div className="flex flex-1 flex-col justify-center p-8 md:p-20 md:w-1/2">
+            <div className="flex flex-1 flex-col justify-center p-6 md:p-12 lg:p-20">
               <div className="relative mx-auto w-full max-w-xs">
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 opacity-15 blur transition duration-500" />
-                <div className="relative w-full rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
+                <div className="relative w-full rounded-2xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
                   <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                     Session mémorisée
                   </h2>
@@ -224,12 +222,12 @@ export default function LoginPage() {
             </div>
 
             {/* Panneau visuel (Droit) */}
-            <div className="relative flex flex-col justify-between p-12 md:w-1/2 md:p-20">
+            <div className="relative flex flex-1 flex-col justify-between p-6 md:p-12 lg:p-20">
               <div className="my-auto max-w-sm">
                 <span className="text-xs font-semibold uppercase tracking-widest text-pink-500">
                   Accès Rapide
                 </span>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">
                   Reprendre la session
                 </h1>
                 <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
@@ -245,7 +243,7 @@ export default function LoginPage() {
         </main>
 
         {/* Navigation Onglets (Footer Minimaliste) */}
-        <footer className="relative z-20 w-full border-t border-zinc-200/80 bg-white/60 px-4 py-3 backdrop-blur-md dark:border-zinc-800/80 dark:bg-black/60">
+        <footer className="relative z-20 shrink-0 w-full border-t border-zinc-200/80 bg-white/60 px-4 py-3 backdrop-blur-md dark:border-zinc-800/80 dark:bg-black/60">
           <div className="mx-auto flex max-w-xs justify-center gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
             <button
               onClick={() => setActiveTab("login")}
