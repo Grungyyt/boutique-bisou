@@ -3,8 +3,7 @@
 import { useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGO_LEFT_URL = "https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png";
-const LOGO_RIGHT_URL = "https://storage.vth-mc.fr/vth-rose.png";
+const LOGO_CENTER_URL = "https://storage.vth-mc.fr/vth-rose-rond.png";
 const DASHBOARD_URL = "https://boutique-bisou.vth-mc.fr/dashboard";
 const SESSION_VERIF_URL = "/verif";
 
@@ -73,14 +72,14 @@ export default function LoginPage() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-zinc-50 antialiased dark:bg-black">
-      {/* Page de vérification pleine page */}
+      {/* Écran de vérification ultra-smooth */}
       {isVerifying && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500 animate-in fade-in dark:bg-zinc-950">
-          <div className="mb-8 flex items-center justify-center gap-6">
-            <img src={LOGO_LEFT_URL} alt="Bisou" className="h-14 w-auto animate-bounce dark:invert" />
-            <span className="text-2xl font-light text-pink-500">+</span>
-            <img src={LOGO_RIGHT_URL} alt="VTH" className="h-14 w-auto animate-bounce duration-700" />
-          </div>
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-all duration-700 animate-in fade-in dark:bg-zinc-950">
+          <img
+            src={LOGO_CENTER_URL}
+            alt="VTH"
+            className="mb-8 h-16 w-16 animate-pulse rounded-full shadow-lg"
+          />
           <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-500">
             Vérification de la session...
           </p>
@@ -90,157 +89,155 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* Structure Fullscreen */}
-      <div className="flex h-full w-full flex-col justify-between">
-        
-        {/* En-tête avec les deux logos */}
-        <header className="relative z-10 flex items-center justify-between px-8 py-6">
+      {/* Structure globale Fullscreen */}
+      <div className="flex h-full w-full flex-col">
+        {/* En-tête avec logo unique au centre */}
+        <header className="relative z-10 flex items-center justify-center py-6">
           <img
-            src={LOGO_LEFT_URL}
-            alt="Boutique Bisou"
-            className={`h-10 w-auto object-contain transition-all duration-700 dark:invert ${
-              isVerifying ? "translate-x-12 opacity-80" : ""
-            }`}
-          />
-          <img
-            src={LOGO_RIGHT_URL}
-            alt="VTH"
-            className={`h-10 w-auto object-contain transition-all duration-700 ${
-              isVerifying ? "-translate-x-12 opacity-80" : ""
-            }`}
+            src={LOGO_CENTER_URL}
+            alt="Logo"
+            className="h-14 w-14 rounded-full object-cover shadow-md transition-transform duration-500 hover:scale-110"
           />
         </header>
 
-        {/* Espace central Fullscreen */}
-        <main className="flex flex-1 items-center justify-center px-4">
-          <div className="relative flex h-full max-h-[600px] w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-200/80 bg-white shadow-2xl dark:border-zinc-800/80 dark:bg-zinc-950">
+        {/* Espace central qui s'étend sur tout l'écran */}
+        <main className="relative flex flex-1 items-center justify-center p-4 md:p-8">
+          <div className="relative flex h-full w-full max-w-6xl overflow-hidden rounded-3xl border border-zinc-200/80 bg-white shadow-2xl backdrop-blur-xl transition-all duration-500 dark:border-zinc-800/80 dark:bg-zinc-950">
             
-            {/* ONGLET 1 : LOGIN */}
-            {activeTab === "login" && (
-              <div className="flex h-full w-full flex-col md:flex-row">
-                {/* Dégradé Gauche */}
-                <div className="flex flex-col justify-between bg-gradient-to-br from-pink-500 via-rose-500 to-amber-400 p-10 text-white md:w-1/2">
-                  <div>
-                    <h2 className="text-3xl font-extrabold tracking-tight">Se connecter</h2>
-                    <p className="mt-3 text-sm text-white/80">
-                      Accède à ton compte en renseignant tes identifiants.
-                    </p>
-                  </div>
-                  <div className="text-xs font-medium text-white/70">
-                    Boutique Bisou × VTH
-                  </div>
+            {/* VUE LOGIN */}
+            <div
+              className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-700 ease-in-out md:flex-row ${
+                activeTab === "login"
+                  ? "pointer-events-auto opacity-100 translate-x-0"
+                  : "pointer-events-none opacity-0 -translate-x-12"
+              }`}
+            >
+              {/* Dégradé à Gauche */}
+              <div className="flex flex-col justify-between bg-gradient-to-br from-pink-500 via-rose-500 to-amber-400 p-10 text-white md:w-1/2">
+                <div>
+                  <h2 className="text-3xl font-extrabold tracking-tight">Se connecter</h2>
+                  <p className="mt-3 text-sm text-white/80">
+                    Renseigne tes accès pour ouvrir ta session.
+                  </p>
                 </div>
-
-                {/* Formulaire Droite */}
-                <div className="flex flex-1 flex-col justify-center p-10 md:w-1/2">
-                  <form onSubmit={handleSubmit} className="flex h-full flex-col justify-between">
-                    <div className="my-auto space-y-6">
-                      <div>
-                        <label htmlFor="identifier" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                          Identifiant
-                        </label>
-                        <div className="group/field relative flex items-center">
-                          <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
-                            <PapiconUser className="h-5 w-5" />
-                          </span>
-                          <input
-                            id="identifier"
-                            type="text"
-                            value={identifier}
-                            onChange={(e) => setIdentifier(e.target.value)}
-                            required
-                            placeholder="nom@exemple.fr"
-                            className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-3 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                          Mot de passe
-                        </label>
-                        <div className="group/field relative flex items-center">
-                          <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
-                            <PapiconLock className="h-5 w-5" />
-                          </span>
-                          <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="••••••••"
-                            className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-3 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
-                          />
-                        </div>
-                      </div>
-
-                      {error && (
-                        <p className="text-xs font-medium text-rose-500">
-                          {error}
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-3.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                    >
-                      {loading ? (
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      ) : (
-                        "Connexion"
-                      )}
-                    </button>
-                  </form>
+                <div className="text-xs font-medium text-white/70">
+                  Espace d'authentification
                 </div>
               </div>
-            )}
 
-            {/* ONGLET 2 : SESSION */}
-            {activeTab === "session" && (
-              <div className="flex h-full w-full flex-col md:flex-row">
-                {/* Contenu Gauche */}
-                <div className="flex flex-1 flex-col justify-between p-10 md:w-1/2">
-                  <div className="my-auto">
-                    <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                      Session disponible
-                    </h2>
-                    <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-                      Un jeton de connexion active a été détecté pour cet appareil.
-                    </p>
+              {/* Formulaire à Droite */}
+              <div className="flex flex-1 flex-col justify-center p-8 md:p-12 md:w-1/2">
+                <form onSubmit={handleSubmit} className="flex h-full flex-col justify-between">
+                  <div className="my-auto space-y-6">
+                    <div>
+                      <label htmlFor="identifier" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        Identifiant
+                      </label>
+                      <div className="group/field relative flex items-center">
+                        <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
+                          <PapiconUser className="h-5 w-5" />
+                        </span>
+                        <input
+                          id="identifier"
+                          type="text"
+                          value={identifier}
+                          onChange={(e) => setIdentifier(e.target.value)}
+                          required
+                          placeholder="nom@exemple.fr"
+                          className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-3.5 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        Mot de passe
+                      </label>
+                      <div className="group/field relative flex items-center">
+                        <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
+                          <PapiconLock className="h-5 w-5" />
+                        </span>
+                        <input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-3.5 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
+                        />
+                      </div>
+                    </div>
+
+                    {error && (
+                      <p className="text-xs font-medium text-rose-500">
+                        {error}
+                      </p>
+                    )}
                   </div>
 
                   <button
-                    onClick={handleSessionRedirect}
-                    className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-3.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    type="submit"
+                    disabled={loading}
+                    className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-4 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
                   >
-                    Me connecter à ma session
+                    {loading ? (
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      "Connexion"
+                    )}
                   </button>
+                </form>
+              </div>
+            </div>
+
+            {/* VUE SESSION */}
+            <div
+              className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-700 ease-in-out md:flex-row ${
+                activeTab === "session"
+                  ? "pointer-events-auto opacity-100 translate-x-0"
+                  : "pointer-events-none opacity-0 translate-x-12"
+              }`}
+            >
+              {/* Contenu à Gauche */}
+              <div className="flex flex-1 flex-col justify-between p-8 md:p-12 md:w-1/2">
+                <div className="my-auto">
+                  <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
+                    Session active
+                  </h2>
+                  <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                    Une session précédente est mémorisée sur cet appareil.
+                  </p>
                 </div>
 
-                {/* Dégradé Droite */}
-                <div className="flex flex-col justify-between bg-gradient-to-br from-pink-500 via-rose-500 to-amber-400 p-10 text-white md:w-1/2">
-                  <div>
-                    <h2 className="text-3xl font-extrabold tracking-tight">Accès Rapide</h2>
-                    <p className="mt-3 text-sm text-white/80">
-                      Rejoins directement ton espace de travail sans retaper tes accès.
-                    </p>
-                  </div>
-                  <div className="text-xs font-medium text-white/70">
-                    Boutique Bisou × VTH
-                  </div>
+                <button
+                  onClick={handleSessionRedirect}
+                  className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-4 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                >
+                  Me connecter à ma session
+                </button>
+              </div>
+
+              {/* Dégradé à Droite */}
+              <div className="flex flex-col justify-between bg-gradient-to-br from-pink-500 via-rose-500 to-amber-400 p-10 text-white md:w-1/2">
+                <div>
+                  <h2 className="text-3xl font-extrabold tracking-tight">Accès Rapide</h2>
+                  <p className="mt-3 text-sm text-white/80">
+                    Retrouve directement ton compte sans ressaisir tes identifiants.
+                  </p>
+                </div>
+                <div className="text-xs font-medium text-white/70">
+                  Espace d'authentification
                 </div>
               </div>
-            )}
+            </div>
 
           </div>
         </main>
 
-        {/* Barre du bas avec la navigation */}
+        {/* Barre du bas avec les deux onglets */}
         <footer className="relative z-10 w-full border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="mx-auto grid max-w-5xl grid-cols-2">
+          <div className="mx-auto grid w-full grid-cols-2">
             <button
               onClick={() => setActiveTab("login")}
               className={`py-4 text-xs font-bold uppercase tracking-widest transition-all ${
