@@ -83,10 +83,10 @@ export default function RootLayout({
             </a>
 
             <a
-              href="/legal/mentions-legal"
+              href="/legal"
               className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl transition-colors duration-200 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Mentions Légales
+              Centre Légal
             </a>
           </div>
 
