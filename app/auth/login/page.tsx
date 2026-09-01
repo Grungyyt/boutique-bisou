@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGO_URL = "https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png";
 const DASHBOARD_URL = "https://boutique-bisou.vth-mc.fr/dashboard";
 const SESSION_VERIF_URL = "/verif";
 
@@ -78,13 +77,6 @@ export default function LoginPage() {
       {/* Écran de redirection/vérification */}
       {isVerifying && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-50 dark:bg-black transition-all duration-500">
-          <img
-            src={LOGO_URL}
-            alt="BisouData"
-            width={140}
-            height={28}
-            className="mb-6 opacity-90 dark:invert animate-pulse"
-          />
           <div className="h-0.5 w-32 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
             <div className="h-full w-full origin-left bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 animate-in slide-in-from-left duration-700 ease-out" />
           </div>
@@ -93,16 +85,6 @@ export default function LoginPage() {
 
       {/* Layout Fullscreen */}
       <div className="flex h-full w-full flex-col">
-        {/* Header simple avec logo */}
-        <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-center p-8">
-          <img
-            src={LOGO_URL}
-            alt="BisouData"
-            width={130}
-            height={26}
-            className="transition-transform duration-300 hover:scale-105 dark:invert"
-          />
-        </header>
 
         {/* Zone de contenu central */}
         <main className="relative flex-1">
