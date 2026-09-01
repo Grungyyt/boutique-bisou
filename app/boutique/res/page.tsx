@@ -48,7 +48,7 @@ export default function ReservationConfirmationPage() {
         setReservation(data);
       } catch (err: any) {
         setError(err.message || "Impossible de récupérer les détails de la réservation.");
-      } font-medium {
+      } finally {
         setLoading(false);
       }
     };
