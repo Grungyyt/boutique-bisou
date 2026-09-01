@@ -4,7 +4,6 @@ import "./globals.css";
 import OsaStatusBadge from "./OsaStatusBadge";
 import VisitTracker from "./VisitTracker";
 
-// Variable CLIENT corrigée
 const CLIENT = "Collège Pierre Dubois";
 
 const geistSans = Geist({
@@ -32,10 +31,10 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="relative min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100">
+      <body className="relative min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100 overflow-x-hidden">
         
-        {/* Halo de lumière d'arrière-plan */}
-        <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-pink-500/20 via-rose-500/20 to-amber-400/10 blur-[100px]" />
+        {/* Halo lumineux renforcé (opacité ajustée + taille augmentée) */}
+        <div className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[800px] rounded-full bg-gradient-to-tr from-pink-500/30 via-rose-400/20 to-amber-300/30 blur-[120px] z-0" />
 
         <VisitTracker />
         
@@ -44,9 +43,9 @@ export default function RootLayout({
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 w-full py-6 flex flex-col items-center gap-4 bg-white/60 border-t border-zinc-200/80 backdrop-blur-md px-4 dark:bg-zinc-950/60 dark:border-zinc-800/80">
+        <footer className="relative z-10 w-full py-6 flex flex-col items-center gap-4 bg-white/40 border-t border-zinc-200/80 backdrop-blur-md px-4 dark:bg-zinc-950/40 dark:border-zinc-800/80">
           
-          {/* Bouton Principal (Soutenir avec le dégradé d'origine) */}
+          {/* Bouton Principal */}
           <a
             href="https://ko-fi.com/vth"
             target="_blank"
@@ -57,13 +56,13 @@ export default function RootLayout({
             ☕ Soutenir le projet
           </a>
 
-          {/* --- BOUTONS D'ACTION --- */}
+          {/* Boutons d'action */}
           <div className="flex flex-wrap justify-center gap-3">
             <a
               href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-colors duration-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl transition-colors duration-200 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Contacter le Collège Pierre Dubois
             </a>
@@ -72,13 +71,12 @@ export default function RootLayout({
               href="mailto:contact@vth-mc.fr"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-colors duration-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl transition-colors duration-200 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Nous Contacter (VTH Group)
             </a>
           </div>
 
-          {/* Texte explicatif (non-bouton) avec lien vers le site */}
           <p className="text-xs text-zinc-500 text-center max-w-2xl my-1 dark:text-zinc-400">
             <a 
               href="https://pdubois.lamayenne.e-lyco.fr/" 
@@ -91,7 +89,6 @@ export default function RootLayout({
             . Toutes les images affichées sont fournies par le site du Collège Pierre Dubois ou, pour les photos d'articles, par l'équipe de la Boutique Bisous.
           </p>
 
-          {/* Mentions de copyright */}
           <div className="text-center">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Powered by{" "}
@@ -105,7 +102,6 @@ export default function RootLayout({
               </a>
             </p>
 
-            {/* Message pour les crédits */}
             <p className="text-xs text-zinc-500 mt-2 dark:text-zinc-400">
               Un problème de crédits ? Contactez-nous par e-mail :{" "}
               <a 
@@ -121,7 +117,6 @@ export default function RootLayout({
             </p>
           </div>
 
-          {/* Statut OSA (Operating Système Alerte) */}
           <OsaStatusBadge />
 
         </footer>
