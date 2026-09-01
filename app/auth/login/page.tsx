@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
 const LOGO_URL = "https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png";
 const DASHBOARD_URL = "https://boutique-bisou.vth-mc.fr/dashboard";
 
-// Composant d'icône SVG Papicons avec gestion du remplissage dynamique
 function PapiconUser({ className }: { className?: string }) {
   return (
     <svg
@@ -65,35 +63,22 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-6 dark:bg-black">
-      {/* Logo avec apparition en douceur */}
-      <motion.img
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+      <img
         src={LOGO_URL}
         alt="BisouData"
         width={140}
         height={28}
-        className="mb-10 dark:invert"
+        className="mb-10 transition-transform duration-300 hover:scale-105 dark:invert"
       />
 
-      {/* Carte du formulaire animée */}
-      <motion.form
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+      <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+        className="w-full max-w-sm transform rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950"
       >
-        {/* Titre avec Icône Papicons animée */}
-        <div className="mb-6 flex items-center gap-3">
-          <motion.div
-            whileHover={{ rotate: 12, scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500"
-          >
+        <div className="group mb-6 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
             <PapiconUser className="h-6 w-6" />
-          </motion.div>
+          </div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
             Connexion
           </h1>
@@ -129,39 +114,24 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Message d'erreur fluide */}
-        <AnimatePresence>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-4 text-sm text-rose-500"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+        {error && (
+          <p className="mb-4 text-sm text-rose-500 transition-all duration-200">
+            {error}
+          </p>
+        )}
 
-        {/* Bouton interactif avec micro-animations */}
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           type="submit"
           disabled={loading}
-          className="relative w-full overflow-hidden rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2.5 text-sm font-semibold text-white shadow-md transition-opacity hover:opacity-95 disabled:opacity-50"
+          className="relative flex w-full items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
         >
           {loading ? (
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-            />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
             "Se connecter"
           )}
-        </motion.button>
-      </motion.form>
+        </button>
+      </form>
     </div>
   );
 }
