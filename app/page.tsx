@@ -44,11 +44,6 @@ export default function HomePage() {
   const router = useRouter();
 
   // --- Vérification de l'état opérationnel du service ---
-  // À CHAQUE arrivée/reload sur l'accueil, on repasse par /eta-verif qui
-  // interroge le serveur. On garde un très court délai de grâce (quelques
-  // secondes) juste après avoir été confirmé opérationnel par /eta-verif,
-  // pour éviter une boucle infinie entre les deux pages — mais un reload
-  // "normal" (après ce délai) redéclenche bien une nouvelle vérification.
   useEffect(() => {
     const dernierCheck = Number(sessionStorage.getItem("bisou_eta_checked_at") || 0);
     const recent = Date.now() - dernierCheck < 3000;
@@ -167,8 +162,8 @@ export default function HomePage() {
       : [];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
-      {/* CSS du défilement Modrinth */}
+    <div className="relative mx-auto max-w-6xl px-4 py-8 md:py-16">
+      {/* CSS du défilement Marquee */}
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -197,45 +192,48 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 py-16 gap-20">
+      {/* Container principal style Glassmorphism identique aux pages légales */}
+      <div className="flex flex-col items-center gap-16 rounded-2xl border border-zinc-200/80 bg-white/80 p-6 md:p-12 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
+        
         {/* --- SECTION HERO : TEXTE + PILE DE PHOTOS ORIGINALE --- */}
-        <div className="flex w-full flex-col items-center justify-center gap-10 lg:flex-row lg:gap-20">
+        <div className="flex w-full flex-col items-center justify-between gap-10 lg:flex-row lg:gap-12">
           {/* Texte d'intro */}
           <div className="max-w-md text-center lg:text-left">
             <div className="mb-8 flex justify-center lg:justify-start">
               <img
                 src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
                 alt="Logo Boutique Bisou"
-                className="h-32 w-auto object-contain"
+                className="h-28 w-auto object-contain"
               />
             </div>
 
-            <span className="mb-4 inline-block rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+            <span className="mb-4 inline-block rounded-lg bg-pink-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-pink-500">
               Boutique Bisou
             </span>
-            <h1 className="text-4xl font-semibold leading-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-5xl">
               Des vêtements choisis avec cœur
             </h1>
-            <p className="mt-4 text-base text-zinc-500 dark:text-zinc-400">
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Chaque pièce a sa propre histoire. Échangez vos tickets contre des
               vêtements uniques, sélectionnés un à un.
             </p>
+
             <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
               <a
                 href="/boutique"
-                className="inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90 active:scale-95"
+                className="inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98]"
               >
                 Voir les articles
               </a>
               <a
                 href="/equipe"
-                className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+                className="inline-block rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Voir l'Équipe
               </a>
               <a
                 href="/verif"
-                className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+                className="inline-block rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Tableau de bord
               </a>
@@ -243,12 +241,12 @@ export default function HomePage() {
                 href="https://ko-fi.com/vth"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl bg-zinc-100/80 px-5 py-2.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 <img
                   src="https://storage.vth-mc.fr/img/web/marche.gif"
                   alt=""
-                  className="h-5 w-auto"
+                  className="h-4 w-auto"
                 />
                 Soutenir
               </a>
@@ -257,7 +255,7 @@ export default function HomePage() {
 
           {/* Pile de photos originale */}
           <div
-            className="relative h-[520px] w-[340px] shrink-0 sm:h-[580px] sm:w-[380px]"
+            className="relative h-[480px] w-[310px] shrink-0 sm:h-[540px] sm:w-[350px]"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
           >
@@ -290,7 +288,7 @@ export default function HomePage() {
                     willChange: "transform, opacity",
                   }}
                 >
-                  <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5">
                     <img
                       src={IMAGES[imgIndex]}
                       alt={`Vêtement ${imgIndex + 1}`}
@@ -354,27 +352,29 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- SECTION CAROUSSEL MODRINTH (ARTICLES API) --- */}
-        <div className="w-full flex flex-col items-center gap-6 pt-8">
+        <hr className="w-full border-zinc-200/80 dark:border-zinc-800/80" />
+
+        {/* --- SECTION CARROUSEL (ARTICLES API) --- */}
+        <div className="w-full flex flex-col items-center gap-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               Nos T-Shirts & Articles en rayon
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               Survolez un article avec la souris pour stopper le défilement.
             </p>
           </div>
 
-          <div className="relative w-full overflow-hidden py-4">
-            <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-16 bg-gradient-to-r from-zinc-50 to-transparent dark:from-black" />
-            <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-16 bg-gradient-to-l from-zinc-50 to-transparent dark:from-black" />
+          <div className="relative w-full overflow-hidden py-2">
+            <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-12 bg-gradient-to-r from-white/90 to-transparent dark:from-zinc-950/90" />
+            <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-12 bg-gradient-to-l from-white/90 to-transparent dark:from-zinc-950/90" />
 
             {loadingProduits ? (
-              <div className="flex justify-center gap-6 py-10">
+              <div className="flex justify-center gap-6 py-6">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-80 w-72 animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800"
+                    className="h-80 w-72 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-900"
                   />
                 ))}
               </div>
@@ -384,18 +384,18 @@ export default function HomePage() {
                   <a
                     key={`${item.id}-${idx}`}
                     href="/boutique"
-                    className="group flex w-[280px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
+                    className="group flex w-[270px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/50"
                   >
-                    <div className="relative h-56 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                    <div className="relative h-52 w-full overflow-hidden rounded-xl bg-zinc-200/60 dark:bg-zinc-800/60">
                       <img
                         src={item.photo_url}
                         alt={item.nom}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         draggable={false}
                       />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
 
-                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
+                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
                         <span
                           className={`h-2 w-2 rounded-full ${
                             item.quantite > 0
@@ -408,7 +408,7 @@ export default function HomePage() {
                           : "Épuisé"}
                       </div>
 
-                      <div className="absolute right-3 top-3 rounded-full bg-pink-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+                      <div className="absolute right-3 top-3 rounded-full bg-pink-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
                         🎟️ {item.prix_tickets}{" "}
                         {item.prix_tickets > 1 ? "Tickets" : "Ticket"}
                       </div>
@@ -416,7 +416,7 @@ export default function HomePage() {
 
                     <div className="mt-4 flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-pink-500">
                           {item.type}
                         </span>
                         {item.taille && (
@@ -426,18 +426,18 @@ export default function HomePage() {
                         )}
                       </div>
 
-                      <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-pink-500 transition-colors line-clamp-1">
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 group-hover:text-pink-500 transition-colors line-clamp-1">
                         {item.nom}
-                      </h4>
+                      </h3>
 
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         {item.genre && (
-                          <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                          <span className="rounded-md bg-zinc-200/50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300">
                             {item.genre}
                           </span>
                         )}
                         {item.couleur && (
-                          <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                          <span className="rounded-md bg-zinc-200/50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300">
                             Couleur : {item.couleur}
                           </span>
                         )}
@@ -447,23 +447,25 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-sm text-zinc-500">
+              <p className="text-center text-xs text-zinc-500">
                 Aucun article disponible pour le moment.
               </p>
             )}
           </div>
         </div>
 
-        {/* Section Newsletter */}
-        <div className="w-full max-w-xl rounded-3xl border border-pink-100 bg-white/80 p-8 text-center shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-100 dark:bg-pink-950/50">
-            <span className="text-2xl">💌</span>
+        <hr className="w-full border-zinc-200/80 dark:border-zinc-800/80" />
+
+        {/* --- SECTION NEWSLETTER --- */}
+        <div className="w-full max-w-xl rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-6 md:p-8 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/50">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500">
+            <span className="text-xl">💌</span>
           </div>
-          <h3 className="mt-4 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Alerte nouveaux vêtements
           </h3>
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Soyez le premier informé dès qu’un nouvel article est ajouté à la boutique. Recevez la photo et les détails directement par e-mail.
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 max-w-sm mx-auto">
+            Soyez le premier informé dès qu’un nouvel article est ajouté à la boutique.
           </p>
 
           <form onSubmit={handleSubscribe} className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -473,12 +475,12 @@ export default function HomePage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="votre.email@exemple.com"
-              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              className="w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2.5 text-xs text-zinc-900 outline-none transition focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-800/80 dark:bg-zinc-950 dark:text-zinc-100"
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
+              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
             >
               {isSubmitting ? "Inscription..." : "M'inscrire"}
             </button>
@@ -486,7 +488,7 @@ export default function HomePage() {
 
           {statusMessage && (
             <p
-              className={`mt-4 text-xs font-semibold ${
+              className={`mt-3 text-xs font-semibold ${
                 statusType === "success"
                   ? "text-emerald-500"
                   : "text-rose-500"
@@ -497,6 +499,7 @@ export default function HomePage() {
             </p>
           )}
         </div>
+
       </div>
     </div>
   );
