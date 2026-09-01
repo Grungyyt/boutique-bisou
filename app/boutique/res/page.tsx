@@ -48,7 +48,7 @@ export default function ReservationConfirmationPage() {
         setReservation(data);
       } catch (err: any) {
         setError(err.message || "Impossible de récupérer les détails de la réservation.");
-      } finally {
+      } font-medium {
         setLoading(false);
       }
     };
@@ -65,8 +65,8 @@ export default function ReservationConfirmationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 flex flex-col items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-pink-100 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-xl text-center">
+    <div className="relative mx-auto flex min-h-[80vh] max-w-md flex-col items-center justify-center p-4 sm:p-6">
+      <div className="w-full rounded-3xl border border-zinc-200/80 bg-white/80 p-6 text-center shadow-xl backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:p-8">
         {/* Logo */}
         <div className="mb-4 flex justify-center">
           <img
@@ -83,14 +83,14 @@ export default function ReservationConfirmationPage() {
           </div>
         ) : error ? (
           <div className="py-8">
-            <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-600 text-xl">
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-rose-100/80 text-xl text-rose-600 backdrop-blur-md dark:bg-rose-950/50 dark:text-rose-400">
               ⚠️
             </div>
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Réservation introuvable</h2>
             <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{error}</p>
             <Link
               href="/boutique"
-              className="mt-6 inline-block rounded-xl bg-pink-500 px-6 py-2.5 text-xs font-semibold text-white shadow-md transition hover:bg-pink-600"
+              className="mt-6 inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-2.5 text-xs font-bold text-white shadow-md transition hover:scale-[1.01] active:scale-[0.98]"
             >
               Retour à la boutique
             </Link>
@@ -98,7 +98,7 @@ export default function ReservationConfirmationPage() {
         ) : reservation ? (
           <div>
             {/* Tag Succès */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-3.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3.5 py-1 text-xs font-bold text-emerald-600 backdrop-blur-md dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-400">
               <span>✨</span>
               <span>Vêtement réservé avec succès !</span>
             </div>
@@ -111,21 +111,20 @@ export default function ReservationConfirmationPage() {
             </p>
 
             {/* Encadré Code à 6 chiffres */}
-            {}
             <div className="my-6 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-amber-400 p-0.5 shadow-lg">
-              <div className="rounded-[15px] bg-white dark:bg-zinc-950 p-6">
+              <div className="rounded-[15px] bg-white/90 p-6 backdrop-blur-md dark:bg-zinc-950/90">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                   Numéro de Réservation
                 </p>
                 <div className="mt-2 flex items-center justify-center gap-2">
-                  <span className="text-4xl sm:text-5xl font-black tracking-wider text-pink-600 dark:text-pink-400 font-mono">
+                  <span className="font-mono text-4xl font-black tracking-wider text-pink-600 dark:text-pink-400 sm:text-5xl">
                     {reservation.code_6_chiffres}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyCode}
-                  className="mt-3 text-xs font-medium text-pink-600 dark:text-pink-400 hover:underline inline-flex items-center gap-1"
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-pink-600 hover:underline dark:text-pink-400"
                 >
                   {copied ? "✓ Copié !" : "📋 Copier le numéro"}
                 </button>
@@ -133,8 +132,8 @@ export default function ReservationConfirmationPage() {
             </div>
 
             {/* Information "À présenter à la boutique bisou" */}
-            <div className="mb-6 rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 border border-amber-200 dark:border-amber-800/50 text-left">
-              <p className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+            <div className="mb-6 rounded-xl border border-amber-200/80 bg-amber-50/80 p-3.5 text-left backdrop-blur-md dark:border-amber-800/50 dark:bg-amber-950/30">
+              <p className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
                 <span>📍</span> À présenter à la Boutique Bisou
               </p>
               <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-400">
@@ -143,9 +142,8 @@ export default function ReservationConfirmationPage() {
             </div>
 
             {/* Récapitulatif de l'article */}
-            {}
-            <div className="flex items-center gap-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40 p-3.5 text-left">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-700">
+            <div className="flex items-center gap-4 rounded-2xl border border-zinc-200/60 bg-zinc-100/60 p-3.5 text-left backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-900/60">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-zinc-200/80 dark:bg-zinc-800/80">
                 {reservation.produit_photo ? (
                   <img
                     src={reservation.produit_photo}
@@ -175,7 +173,7 @@ export default function ReservationConfirmationPage() {
             <div className="mt-6">
               <Link
                 href="/boutique"
-                className="text-xs font-semibold text-zinc-500 hover:text-pink-600 dark:text-zinc-400 dark:hover:text-pink-400 transition"
+                className="text-xs font-semibold text-zinc-500 transition hover:text-pink-600 dark:text-zinc-400 dark:hover:text-pink-400"
               >
                 ← Continuer à visiter la boutique
               </Link>
