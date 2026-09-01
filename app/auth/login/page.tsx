@@ -28,6 +28,30 @@ function PapiconUser({ className }: { className?: string }) {
   );
 }
 
+function PapiconLock({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M12 15C12.8284 15 13.5 14.3284 13.5 13.5C13.5 12.6716 12.8284 12 12 12C11.1716 12 10.5 12.6716 10.5 13.5C10.5 14.3284 11.1716 15 12 15Z"
+        fill="currentColor"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 9V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V9H17C18.1046 9 19 9.89543 19 11V19C19 20.1046 18.1046 21 17 21H7C5.89543 21 5 20.1046 5 19V11C5 9.89543 5.89543 9 7 9H8ZM10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7V9H10V7Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -68,12 +92,12 @@ export default function LoginPage() {
         alt="BisouData"
         width={140}
         height={28}
-        className="mb-10 transition-transform duration-300 hover:scale-105 dark:invert"
+        className="mb-10 transition-transform duration-500 hover:scale-105 dark:invert"
       />
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm transform rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950"
+        className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950"
       >
         <div className="group mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
@@ -84,34 +108,48 @@ export default function LoginPage() {
           </h1>
         </div>
 
+        {/* Champ Nom d'utilisateur avec animation d'icône au focus/saisie */}
         <div className="mb-4">
           <label htmlFor="identifier" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Email ou nom d'utilisateur
           </label>
-          <input
-            id="identifier"
-            type="text"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-            autoComplete="username"
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-          />
+          <div className="relative flex items-center">
+            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 peer-focus:scale-110 peer-focus:text-pink-500">
+              <PapiconUser className="h-5 w-5" />
+            </span>
+            <input
+              id="identifier"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              autoComplete="username"
+              placeholder="Ex: bisou@data.fr"
+              className="peer w-full rounded-lg border border-zinc-300 py-2 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-600"
+            />
+          </div>
         </div>
 
+        {/* Champ Mot de passe avec animation d'icône au focus/saisie */}
         <div className="mb-6">
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Mot de passe
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-          />
+          <div className="relative flex items-center">
+            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 peer-focus:scale-110 peer-focus:text-pink-500">
+              <PapiconLock className="h-5 w-5" />
+            </span>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+              className="peer w-full rounded-lg border border-zinc-300 py-2 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-600"
+            />
+          </div>
         </div>
 
         {error && (
