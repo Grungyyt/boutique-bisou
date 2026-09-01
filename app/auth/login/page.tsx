@@ -92,15 +92,15 @@ export default function LoginPage() {
         alt="BisouData"
         width={140}
         height={28}
-        className="mb-10 transition-transform duration-500 hover:scale-105 dark:invert"
+        className="mb-10 transition-transform duration-500 hover:scale-110 dark:invert"
       />
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950"
+        className="w-full max-w-sm rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-2xl dark:border-zinc-800/80 dark:bg-zinc-950/80"
       >
         <div className="group mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:bg-pink-500/20">
             <PapiconUser className="h-6 w-6" />
           </div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -108,13 +108,13 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        {/* Champ Nom d'utilisateur avec animation d'icône au focus/saisie */}
+        {/* Champ Identifiant avec animation d'icône fluide */}
         <div className="mb-4">
           <label htmlFor="identifier" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Email ou nom d'utilisateur
           </label>
-          <div className="relative flex items-center">
-            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 peer-focus:scale-110 peer-focus:text-pink-500">
+          <div className="group relative flex items-center">
+            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 group-focus-within:translate-x-0.5 group-focus-within:scale-110 group-focus-within:text-pink-500">
               <PapiconUser className="h-5 w-5" />
             </span>
             <input
@@ -125,18 +125,18 @@ export default function LoginPage() {
               required
               autoComplete="username"
               placeholder="Ex: bisou@data.fr"
-              className="peer w-full rounded-lg border border-zinc-300 py-2 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-600"
+              className="w-full rounded-xl border border-zinc-300 bg-zinc-50/50 py-2.5 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-50 dark:placeholder:text-zinc-600 dark:focus:bg-zinc-900"
             />
           </div>
         </div>
 
-        {/* Champ Mot de passe avec animation d'icône au focus/saisie */}
+        {/* Champ Mot de passe avec animation d'icône fluide */}
         <div className="mb-6">
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Mot de passe
           </label>
-          <div className="relative flex items-center">
-            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 peer-focus:scale-110 peer-focus:text-pink-500">
+          <div className="group relative flex items-center">
+            <span className="pointer-events-none absolute left-3 flex items-center text-zinc-400 transition-all duration-300 group-focus-within:translate-x-0.5 group-focus-within:scale-110 group-focus-within:text-pink-500">
               <PapiconLock className="h-5 w-5" />
             </span>
             <input
@@ -147,13 +147,13 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
               placeholder="••••••••"
-              className="peer w-full rounded-lg border border-zinc-300 py-2 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-600"
+              className="w-full rounded-xl border border-zinc-300 bg-zinc-50/50 py-2.5 pl-10 pr-3 text-sm outline-none transition-all duration-300 placeholder:text-zinc-400 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/15 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-50 dark:placeholder:text-zinc-600 dark:focus:bg-zinc-900"
             />
           </div>
         </div>
 
         {error && (
-          <p className="mb-4 text-sm text-rose-500 transition-all duration-200">
+          <p className="mb-4 animate-shake text-sm text-rose-500">
             {error}
           </p>
         )}
@@ -161,7 +161,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="relative flex w-full items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+          className="relative flex w-full items-center justify-center rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-pink-500/40 active:scale-[0.98] disabled:opacity-50"
         >
           {loading ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
