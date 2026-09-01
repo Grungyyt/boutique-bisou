@@ -3,35 +3,36 @@
 import { useState } from "react";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
-const LOGO_CENTER_URL = "https://storage.vth-mc.fr/vth-rose-rond.png";
+const LOGO_URL = "https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png";
 const DASHBOARD_URL = "https://boutique-bisou.vth-mc.fr/dashboard";
-const SESSION_VERIF_URL = "/verif";
 
-function IconUser({ className }: { className?: string }) {
+function PapiconUser({ className }: { className?: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function IconLock({ className }: { className?: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8Z"
+        fill="currentColor"
+      />
+      <path
+        d="M4.34542 18.5821C4.39658 18.224 4.42215 18.0449 4.43934 17.9545C4.8491 15.7994 6.4989 14.5405 8.68577 14.7142C8.77748 14.7215 9.03624 14.7541 9.55376 14.8193C10.4048 14.9265 11.2587 15 12 15C12.7413 15 13.5952 14.9265 14.4462 14.8193C14.9638 14.7541 15.2225 14.7215 15.3142 14.7142C17.5011 14.5405 19.1509 15.7994 19.5607 17.9545C19.5778 18.0449 19.6034 18.224 19.6546 18.5821C19.6722 18.7056 19.681 18.7673 19.6857 18.8178C19.7892 19.9495 18.9302 20.9399 17.7953 20.9974C17.7447 21 17.6823 21 17.5575 21H6.4425C6.31772 21 6.25533 21 6.2047 20.9974C5.06979 20.9399 4.21082 19.9495 4.31433 18.8178C4.31895 18.7673 4.32777 18.7056 4.34542 18.5821Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState<"login" | "session">("login");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,225 +54,84 @@ export default function LoginPage() {
         return;
       }
 
-      setIsVerifying(true);
-      setTimeout(() => {
-        window.location.href = DASHBOARD_URL;
-      }, 900);
+      window.location.href = DASHBOARD_URL;
     } catch {
-      setError("Impossible de contacter le serveur.");
+      setError("Impossible de contacter le serveur. Réessaie.");
       setLoading(false);
     }
   };
 
-  const handleSessionRedirect = () => {
-    setIsVerifying(true);
-    setTimeout(() => {
-      window.location.href = SESSION_VERIF_URL;
-    }, 900);
-  };
-
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 font-sans text-zinc-100 antialiased selection:bg-rose-500/20 selection:text-rose-200">
-      
-      {/* Écran de vérification minimaliste */}
-      {isVerifying && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 transition-all duration-500">
-          <img
-            src={LOGO_CENTER_URL}
-            alt="Logo"
-            className="mb-6 h-12 w-12 animate-pulse rounded-full opacity-90"
-          />
-          <div className="h-0.5 w-32 overflow-hidden rounded-full bg-zinc-800">
-            <div className="h-full w-full origin-left bg-gradient-to-r from-rose-500 to-amber-500 animate-in slide-in-from-left duration-700 ease-out" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-6 dark:bg-black">
+      <img
+        src={LOGO_URL}
+        alt="BisouData"
+        width={140}
+        height={28}
+        className="mb-10 transition-transform duration-300 hover:scale-105 dark:invert"
+      />
+
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm transform rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-950"
+      >
+        <div className="group mb-6 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+            <PapiconUser className="h-6 w-6" />
           </div>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            Connexion
+          </h1>
         </div>
-      )}
 
-      {/* Structure globale */}
-      <div className="flex h-full w-full flex-col">
-        
-        {/* Header minimaliste */}
-        <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-center p-8">
-          <img
-            src={LOGO_CENTER_URL}
-            alt="Logo"
-            className="h-10 w-10 opacity-90 transition-opacity hover:opacity-100"
+        <div className="mb-4">
+          <label htmlFor="identifier" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            Email ou nom d'utilisateur
+          </label>
+          <input
+            id="identifier"
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            required
+            autoComplete="username"
+            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           />
-        </header>
+        </div>
 
-        {/* Espace central de contenu */}
-        <main className="relative flex-1">
-          
-          {/* VUE 1 : LOGIN */}
-          <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-in-out md:flex-row ${
-              activeTab === "login"
-                ? "pointer-events-auto opacity-100 translate-x-0"
-                : "pointer-events-none opacity-0 -translate-x-4"
-            }`}
-          >
-            {/* Dégradé pro & minimaliste (Gaucher) */}
-            <div className="relative flex flex-col justify-between bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/40 p-12 text-zinc-100 md:w-1/2 md:p-20">
-              <div className="my-auto max-w-sm">
-                <span className="text-xs font-semibold uppercase tracking-widest text-rose-400/80">
-                  Authentification
-                </span>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                  Se connecter
-                </h1>
-                <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                  Accédez à votre compte pour gérer vos activités.
-                </p>
-              </div>
+        <div className="mb-6">
+          <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            Mot de passe
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
 
-              <div className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
-                Boutique Bisou — VTH
-              </div>
-            </div>
+        {error && (
+          <p className="mb-4 text-sm text-rose-500 transition-all duration-200">
+            {error}
+          </p>
+        )}
 
-            {/* Formulaire (Droit) */}
-            <div className="flex flex-1 flex-col justify-center bg-zinc-950 p-8 md:p-20 md:w-1/2">
-              <form onSubmit={handleSubmit} className="mx-auto flex h-full w-full max-w-xs flex-col justify-center">
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="identifier" className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                      Identifiant
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="pointer-events-none absolute left-3.5 text-zinc-500">
-                        <IconUser />
-                      </span>
-                      <input
-                        id="identifier"
-                        type="text"
-                        value={identifier}
-                        onChange={(e) => setIdentifier(e.target.value)}
-                        required
-                        placeholder="nom@exemple.fr"
-                        className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all focus:border-rose-500/50 focus:bg-zinc-900"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="password" className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                      Mot de passe
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="pointer-events-none absolute left-3.5 text-zinc-500">
-                        <IconLock />
-                      </span>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all focus:border-rose-500/50 focus:bg-zinc-900"
-                      />
-                    </div>
-                  </div>
-
-                  {error && (
-                    <p className="text-xs text-rose-400">
-                      {error}
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-6 flex w-full items-center justify-center rounded-lg bg-zinc-100 py-2.5 text-sm font-medium text-zinc-950 transition-all hover:bg-white active:scale-[0.99]"
-                >
-                  {loading ? (
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-950 border-t-transparent" />
-                  ) : (
-                    "Connexion"
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* VUE 2 : SESSION */}
-          <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-in-out md:flex-row ${
-              activeTab === "session"
-                ? "pointer-events-auto opacity-100 translate-x-0"
-                : "pointer-events-none opacity-0 translate-x-4"
-            }`}
-          >
-            {/* Contenu (Gaucher) */}
-            <div className="flex flex-1 flex-col justify-center bg-zinc-950 p-8 md:p-20 md:w-1/2">
-              <div className="mx-auto flex h-full w-full max-w-xs flex-col justify-center">
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight text-white">
-                    Session active
-                  </h2>
-                  <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
-                    Une session valide a été trouvée pour cet appareil.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleSessionRedirect}
-                  className="mt-6 flex w-full items-center justify-center rounded-lg bg-zinc-100 py-2.5 text-sm font-medium text-zinc-950 transition-all hover:bg-white active:scale-[0.99]"
-                >
-                  Me connecter à ma session
-                </button>
-              </div>
-            </div>
-
-            {/* Dégradé pro & minimaliste (Droit) */}
-            <div className="relative flex flex-col justify-between bg-gradient-to-bl from-zinc-900 via-zinc-900 to-rose-950/40 p-12 text-zinc-100 md:w-1/2 md:p-20">
-              <div className="my-auto max-w-sm">
-                <span className="text-xs font-semibold uppercase tracking-widest text-rose-400/80">
-                  Accès Rapide
-                </span>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                  Reprendre la session
-                </h1>
-                <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-                  Poursuivez immédiatement sans réintroduire vos accès.
-                </p>
-              </div>
-
-              <div className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
-                Boutique Bisou — VTH
-              </div>
-            </div>
-          </div>
-        </main>
-
-        {/* Navigation d'onglets au style minimaliste */}
-        <footer className="relative z-20 w-full border-t border-zinc-900 bg-zinc-950 px-4 py-3">
-          <div className="mx-auto flex max-w-xs justify-center gap-1 rounded-xl bg-zinc-900/60 p-1">
-            <button
-              onClick={() => setActiveTab("login")}
-              className={`flex-1 rounded-lg py-2 text-center text-[11px] font-medium uppercase tracking-wider transition-all ${
-                activeTab === "login"
-                  ? "bg-zinc-800 text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setActiveTab("session")}
-              className={`flex-1 rounded-lg py-2 text-center text-[11px] font-medium uppercase tracking-wider transition-all ${
-                activeTab === "session"
-                  ? "bg-zinc-800 text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              Session
-            </button>
-          </div>
-        </footer>
-
-      </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="relative flex w-full items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+        >
+          {loading ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            "Se connecter"
+          )}
+        </button>
+      </form>
     </div>
   );
 }
