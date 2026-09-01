@@ -33,8 +33,14 @@ export default function RootLayout({
     >
       <body className="relative min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100 overflow-x-hidden">
         
-        {/* Halo lumineux renforcé (opacité ajustée + taille augmentée) */}
-        <div className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[800px] rounded-full bg-gradient-to-tr from-pink-500/30 via-rose-400/20 to-amber-300/30 blur-[120px] z-0" />
+        {/* Background dégradé fixe */}
+        <div 
+          className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-20"
+          style={{
+            background: "radial-gradient(circle at 50% 0%, #ec4899 0%, #f43f5e 25%, #fbbf24 50%, transparent 75%)",
+            filter: "blur(80px)"
+          }}
+        />
 
         <VisitTracker />
         
@@ -74,6 +80,13 @@ export default function RootLayout({
               className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl transition-colors duration-200 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Nous Contacter (VTH Group)
+            </a>
+
+            <a
+              href="/legal/mentions-legal"
+              className="px-4 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl transition-colors duration-200 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Mentions Légales
             </a>
           </div>
 
