@@ -9,7 +9,7 @@ const SESSION_VERIF_URL = "/verif";
 
 function PapiconUser({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8Z" fill="currentColor" />
       <path d="M4.34542 18.5821C4.39658 18.224 4.42215 18.0449 4.43934 17.9545C4.8491 15.7994 6.4989 14.5405 8.68577 14.7142C8.77748 14.7215 9.03624 14.7541 9.55376 14.8193C10.4048 14.9265 11.2587 15 12 15C12.7413 15 13.5952 14.9265 14.4462 14.8193C14.9638 14.7541 15.2225 14.7215 15.3142 14.7142C17.5011 14.5405 19.1509 15.7994 19.5607 17.9545C19.5778 18.0449 19.6034 18.224 19.6546 18.5821C19.6722 18.7056 19.681 18.7673 19.6857 18.8178C19.7892 19.9495 18.9302 20.9399 17.7953 20.9974C17.7447 21 17.6823 21 17.5575 21H6.4425C6.31772 21 6.25533 21 6.2047 20.9974C5.06979 20.9399 4.21082 19.9495 4.31433 18.8178C4.31895 18.7673 4.32777 18.7056 4.34542 18.5821Z" fill="currentColor" />
     </svg>
@@ -18,7 +18,7 @@ function PapiconUser({ className }: { className?: string }) {
 
 function PapiconLock({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <path d="M12 15C12.8284 15 13.5 14.3284 13.5 13.5C13.5 12.6716 12.8284 12 12 12C11.1716 12 10.5 12.6716 10.5 13.5C10.5 14.3284 11.1716 15 12 15Z" fill="currentColor" />
       <path fillRule="evenodd" clipRule="evenodd" d="M8 9V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V9H17C18.1046 9 19 9.89543 19 11V19C19 20.1046 18.1046 21 17 21H7C5.89543 21 5 20.1046 5 19V11C5 9.89543 5.89543 9 7 9H8ZM10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7V9H10V7Z" fill="currentColor" />
     </svg>
@@ -71,79 +71,75 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-slate-950 antialiased selection:bg-pink-500 selection:text-white">
-      {/* Écran de vérification ultra-smooth */}
+    <div className="relative h-screen w-screen overflow-hidden bg-slate-900 font-sans text-slate-100 antialiased selection:bg-pink-500 selection:text-white">
+      {/* Écran de chargement / Vérification */}
       {isVerifying && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 transition-all duration-700 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 transition-all duration-500">
           <img
             src={LOGO_CENTER_URL}
-            alt="VTH"
-            className="mb-8 h-20 w-20 animate-pulse rounded-full shadow-2xl shadow-pink-500/50 ring-2 ring-pink-500/30"
+            alt="Logo"
+            className="mb-6 h-16 w-16 animate-pulse rounded-full border border-pink-500/20 shadow-xl shadow-pink-500/10"
           />
-          <p className="mb-4 text-xs font-bold uppercase tracking-widest text-pink-400">
-            Vérification de la session...
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-slate-400">
+            Connexion en cours...
           </p>
-          <div className="h-1.5 w-64 overflow-hidden rounded-full bg-slate-800">
-            <div className="h-full w-full origin-left bg-gradient-to-r from-violet-600 via-pink-500 to-amber-400 animate-in slide-in-from-left duration-1000 ease-out" />
+          <div className="h-1 w-48 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full w-full origin-left bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 animate-in slide-in-from-left duration-1000 ease-out" />
           </div>
         </div>
       )}
 
-      {/* Structure Fullscreen intégrale */}
+      {/* Layout Fullscreen */}
       <div className="flex h-full w-full flex-col">
-        {/* En-tête absolu sur le haut de l'écran */}
+        {/* Header simple avec logo */}
         <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-center p-6">
           <img
             src={LOGO_CENTER_URL}
             alt="Logo"
-            className="h-14 w-14 rounded-full object-cover shadow-xl ring-2 ring-white/10 transition-transform duration-500 hover:scale-110"
+            className="h-12 w-12 rounded-full object-cover transition-transform duration-300 hover:scale-105"
           />
         </header>
 
-        {/* Espace central Fullscreen */}
+        {/* Espace central de contenu */}
         <main className="relative flex-1">
-          {/* VUE LOGIN */}
+          {/* VUE 1 : LOGIN */}
           <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-700 ease-in-out md:flex-row ${
+            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-out md:flex-row ${
               activeTab === "login"
                 ? "pointer-events-auto opacity-100 translate-x-0"
-                : "pointer-events-none opacity-0 -translate-x-full"
+                : "pointer-events-none opacity-0 -translate-x-8"
             }`}
           >
-            {/* Dégradé Moderne à Gauche (Mesh Gradient) */}
-            <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-tr from-slate-950 via-violet-950 to-indigo-900 p-12 text-white md:w-1/2">
-              {/* Halos de couleurs modernes */}
-              <div className="absolute top-[-20%] left-[-20%] h-[700px] w-[700px] rounded-full bg-gradient-to-br from-pink-600/40 via-purple-600/30 to-transparent blur-[120px]" />
-              <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-amber-500/30 via-rose-500/30 to-transparent blur-[100px]" />
+            {/* Dégradé réaliste et fluide (Côté Gauche) */}
+            <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-pink-600 via-rose-500 to-amber-500 p-10 text-white md:w-1/2 md:p-16">
+              {/* Effet d'ombrage léger pour le relief */}
+              <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
 
               <div className="relative z-10 my-auto max-w-md">
-                <span className="mb-3 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur-md">
-                  Portail d'accès
-                </span>
-                <h2 className="text-4xl font-black tracking-tight text-white lg:text-5xl">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
                   Se connecter
-                </h2>
-                <p className="mt-4 text-base text-slate-300">
-                  Renseigne tes accès pour ouvrir ta session et rejoindre la plateforme.
+                </h1>
+                <p className="mt-4 text-sm font-medium text-white/90 leading-relaxed md:text-base">
+                  Renseigne tes accès pour ouvrir ta session et accéder à ton espace.
                 </p>
               </div>
 
-              <div className="relative z-10 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Espace d'authentification — VTH
+              <div className="relative z-10 text-xs font-semibold tracking-wider text-white/70 uppercase">
+                Boutique Bisou × VTH
               </div>
             </div>
 
-            {/* Formulaire à Droite */}
-            <div className="flex flex-1 flex-col justify-center bg-white p-8 dark:bg-zinc-950 md:p-16 md:w-1/2">
-              <form onSubmit={handleSubmit} className="mx-auto flex h-full w-full max-w-md flex-col justify-center space-y-8">
-                <div className="space-y-6">
+            {/* Formulaire (Côté Droit) */}
+            <div className="flex flex-1 flex-col justify-center bg-slate-950 p-8 md:p-16 md:w-1/2">
+              <form onSubmit={handleSubmit} className="mx-auto flex h-full w-full max-w-sm flex-col justify-center">
+                <div className="space-y-5">
                   <div>
-                    <label htmlFor="identifier" className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    <label htmlFor="identifier" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
                       Identifiant
                     </label>
-                    <div className="group/field relative flex items-center">
-                      <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
-                        <PapiconUser className="h-5 w-5" />
+                    <div className="relative flex items-center">
+                      <span className="pointer-events-none absolute left-3.5 text-slate-500">
+                        <PapiconUser className="h-4 w-4" />
                       </span>
                       <input
                         id="identifier"
@@ -152,18 +148,18 @@ export default function LoginPage() {
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
                         placeholder="nom@exemple.fr"
-                        className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-4 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
+                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 py-3 pl-10 pr-4 text-sm text-slate-100 outline-none transition-all placeholder:text-slate-600 focus:border-pink-500 focus:bg-slate-900 focus:ring-1 focus:ring-pink-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
                       Mot de passe
                     </label>
-                    <div className="group/field relative flex items-center">
-                      <span className="pointer-events-none absolute left-4 flex items-center text-zinc-400 group-focus-within/field:text-pink-500">
-                        <PapiconLock className="h-5 w-5" />
+                    <div className="relative flex items-center">
+                      <span className="pointer-events-none absolute left-3.5 text-slate-500">
+                        <PapiconLock className="h-4 w-4" />
                       </span>
                       <input
                         id="password"
@@ -172,13 +168,13 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="••••••••"
-                        className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 py-4 pl-12 pr-4 text-sm font-medium text-zinc-900 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-pink-500"
+                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 py-3 pl-10 pr-4 text-sm text-slate-100 outline-none transition-all placeholder:text-slate-600 focus:border-pink-500 focus:bg-slate-900 focus:ring-1 focus:ring-pink-500"
                       />
                     </div>
                   </div>
 
                   {error && (
-                    <p className="text-xs font-semibold text-rose-500">
+                    <p className="text-xs font-medium text-rose-400">
                       {error}
                     </p>
                   )}
@@ -187,10 +183,10 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-pink-500 to-amber-500 py-4 text-sm font-bold text-white shadow-xl shadow-pink-500/20 transition-all hover:scale-[1.01] hover:shadow-pink-500/30 active:scale-[0.98]"
+                  className="mt-8 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-pink-500/10 transition-all hover:brightness-110 active:scale-[0.99]"
                 >
                   {loading ? (
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   ) : (
                     "Connexion"
                   )}
@@ -199,82 +195,83 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* VUE SESSION */}
+          {/* VUE 2 : SESSION */}
           <div
-            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-700 ease-in-out md:flex-row ${
+            className={`absolute inset-0 flex h-full w-full flex-col transition-all duration-500 ease-out md:flex-row ${
               activeTab === "session"
                 ? "pointer-events-auto opacity-100 translate-x-0"
-                : "pointer-events-none opacity-0 translate-x-full"
+                : "pointer-events-none opacity-0 translate-x-8"
             }`}
           >
-            {/* Contenu à Gauche */}
-            <div className="flex flex-1 flex-col justify-center bg-white p-8 dark:bg-zinc-950 md:p-16 md:w-1/2">
-              <div className="mx-auto flex h-full w-full max-w-md flex-col justify-center space-y-8">
-                <div className="space-y-3">
-                  <h2 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                    Session active
+            {/* Contenu (Côté Gauche) */}
+            <div className="flex flex-1 flex-col justify-center bg-slate-950 p-8 md:p-16 md:w-1/2">
+              <div className="mx-auto flex h-full w-full max-w-sm flex-col justify-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-100 md:text-3xl">
+                    Session enregistrée
                   </h2>
-                  <p className="text-base text-zinc-500 dark:text-zinc-400">
-                    Une session précédente est mémorisée sur cet appareil.
+                  <p className="mt-3 text-sm text-slate-400 leading-relaxed">
+                    Une session active a été trouvée. Tu peux te reconnecter immédiatement sans retaper tes identifiants.
                   </p>
                 </div>
 
                 <button
                   onClick={handleSessionRedirect}
-                  className="group/btn relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-pink-500 to-amber-500 py-4 text-sm font-bold text-white shadow-xl shadow-pink-500/20 transition-all hover:scale-[1.01] hover:shadow-pink-500/30 active:scale-[0.98]"
+                  className="mt-8 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-pink-500/10 transition-all hover:brightness-110 active:scale-[0.99]"
                 >
                   Me connecter à ma session
                 </button>
               </div>
             </div>
 
-            {/* Dégradé Moderne à Droite (Mesh Gradient) */}
-            <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-bl from-slate-950 via-violet-950 to-indigo-900 p-12 text-white md:w-1/2">
-              {/* Halos de couleurs modernes */}
-              <div className="absolute top-[-20%] right-[-20%] h-[700px] w-[700px] rounded-full bg-gradient-to-bl from-pink-600/40 via-purple-600/30 to-transparent blur-[120px]" />
-              <div className="absolute bottom-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-amber-500/30 via-rose-500/30 to-transparent blur-[100px]" />
+            {/* Dégradé réaliste (Côté Droit) */}
+            <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-pink-600 via-rose-500 to-amber-500 p-10 text-white md:w-1/2 md:p-16">
+              <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
 
               <div className="relative z-10 my-auto max-w-md">
-                <span className="mb-3 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur-md">
-                  Accès Direct
-                </span>
-                <h2 className="text-4xl font-black tracking-tight text-white lg:text-5xl">
-                  Reprendre la session
-                </h2>
-                <p className="mt-4 text-base text-slate-300">
-                  Retrouve directement ton espace de travail sans retaper tes identifiants.
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+                  Accès Rapide
+                </h1>
+                <p className="mt-4 text-sm font-medium text-white/90 leading-relaxed md:text-base">
+                  Reprends tes activités là où tu t'étais arrêté en un instant.
                 </p>
               </div>
 
-              <div className="relative z-10 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Espace d'authentification — VTH
+              <div className="relative z-10 text-xs font-semibold tracking-wider text-white/70 uppercase">
+                Boutique Bisou × VTH
               </div>
             </div>
           </div>
         </main>
 
-        {/* Barre d'onglets fixe en bas */}
-        <footer className="relative z-20 w-full border-t border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
-          <div className="grid w-full grid-cols-2">
+        {/* Nouveau design d'onglets en bas (Moderne et réaliste) */}
+        <footer className="relative z-20 w-full border-t border-slate-800 bg-slate-950/90 backdrop-blur-md">
+          <div className="mx-auto grid max-w-2xl grid-cols-2 p-2">
             <button
               onClick={() => setActiveTab("login")}
-              className={`py-5 text-xs font-extrabold uppercase tracking-widest transition-all ${
+              className={`relative flex items-center justify-center py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 rounded-lg ${
                 activeTab === "login"
-                  ? "bg-pink-500/10 text-pink-500 dark:text-pink-400"
-                  : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  ? "text-pink-400 bg-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               Login
+              {activeTab === "login" && (
+                <span className="absolute bottom-1 h-0.5 w-6 rounded-full bg-pink-500" />
+              )}
             </button>
             <button
               onClick={() => setActiveTab("session")}
-              className={`py-5 text-xs font-extrabold uppercase tracking-widest transition-all ${
+              className={`relative flex items-center justify-center py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 rounded-lg ${
                 activeTab === "session"
-                  ? "bg-pink-500/10 text-pink-500 dark:text-pink-400"
-                  : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  ? "text-pink-400 bg-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               J'ai déjà une session
+              {activeTab === "session" && (
+                <span className="absolute bottom-1 h-0.5 w-6 rounded-full bg-pink-500" />
+              )}
             </button>
           </div>
         </footer>
