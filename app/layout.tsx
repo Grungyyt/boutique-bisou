@@ -17,7 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Boutique Bisou",
+  title: {
+    default: "Boutique Bisou",
+    template: "%s -- Boutique Bisou",
+  },
   description: "Created By VTH Group",
 };
 
