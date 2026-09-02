@@ -3,34 +3,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Slider d'en-tête (Style Famille Agri)
+// Slides d'en-tête (Grille Famille Agri)
 const HERO_SLIDES = [
   {
     id: 1,
-    badge: "✨ Nouveautés 2026",
-    titre: "Des vêtements choisis avec cœur",
-    description: "Chaque pièce a sa propre histoire. Échangez vos tickets contre des vêtements uniques.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
-    ctaText: "Voir les articles",
-    ctaLink: "/boutique",
+    topBadgeLeft: "FAMILLE AGRI 2026",
+    topBadgeRight: "STERVIO & GERMAIN",
+    topImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
+    cardLeftImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
+    cardLeftLink: "/boutique",
+    cardRightTitle: "DESIGN",
   },
   {
     id: 2,
-    badge: "🎟️ Échange solidaire",
-    titre: "Une seconde vie pour vos tenues",
-    description: "Découvrez nos collections sélectionnées pièce par pièce pour la communauté.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
-    ctaText: "Accéder à la boutique",
-    ctaLink: "/boutique",
-  },
-  {
-    id: 3,
-    badge: "📌 Réservation rapide",
-    titre: "Réservez en ligne, retirez en boutique",
-    description: "Obtenez votre numéro à 6 chiffres et venez récupérer vos coups de cœur.",
-    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
-    ctaText: "Explorer le catalogue",
-    ctaLink: "/boutique",
+    topBadgeLeft: "BOUTIQUE BISOU",
+    topBadgeRight: "COLLECTION 2026",
+    topImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
+    cardLeftImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
+    cardLeftLink: "/boutique",
+    cardRightTitle: "QUALITÉ",
   },
 ];
 
@@ -82,13 +73,14 @@ export default function HomePage() {
     }
   }, [router]);
 
-  // --- Carrousel Hero (Famille Agri) ---
+  // --- Carrousel Grille Hero ---
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [toggleActive, setToggleActive] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5500);
+    }, 6000);
     return () => clearInterval(timer);
   }, []);
 
@@ -194,8 +186,10 @@ export default function HomePage() {
         : [...produits, ...produits]
       : [];
 
+  const slide = HERO_SLIDES[currentSlide];
+
   return (
-    <div className="relative mx-auto max-w-6xl px-4 py-8 md:py-16">
+    <div className="relative mx-auto max-w-6xl px-4 py-6 md:py-12">
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -224,112 +218,122 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="flex flex-col items-center gap-16">
+      <div className="flex flex-col items-center gap-14">
         
-        {/* --- BANNIÈRE HERO ANIMÉE (STYLE FAMILLE AGRI) --- */}
-        <div className="relative min-h-[500px] w-full overflow-hidden rounded-3xl border border-zinc-200/80 shadow-2xl backdrop-blur-xl dark:border-zinc-800/80">
-          {/* Images en fond avec fondu et zoom */}
-          {HERO_SLIDES.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentSlide ? "opacity-100 z-0" : "opacity-0 -z-10"
-              }`}
+        {/* --- HERO BANNER EXACTEMENT COMME FAMILLEAGRI.FR --- */}
+        <div className="grid w-full gap-4">
+          {/* Carte Supérieure Grande */}
+          <div className="relative h-[300px] sm:h-[400px] md:h-[460px] w-full overflow-hidden rounded-[2.5rem] bg-zinc-900 shadow-xl">
+            <img
+              src={slide.topImage}
+              alt="Famille Agri Top"
+              className="h-full w-full object-cover transition-opacity duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+
+            {/* Toggle vert en haut à gauche */}
+            <button
+              type="button"
+              onClick={() => setToggleActive(!toggleActive)}
+              className="absolute top-6 left-6 z-10 focus:outline-none"
             >
-              <img
-                src={slide.image}
-                alt={slide.titre}
-                className={`h-full w-full object-cover transition-transform duration-[7000ms] ease-out ${
-                  index === currentSlide ? "scale-110" : "scale-100"
+              <div
+                className={`flex h-8 w-14 items-center rounded-full p-1 transition-colors duration-300 ${
+                  toggleActive ? "bg-[#7CD92A]" : "bg-zinc-600"
                 }`}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30 dark:from-black/90 dark:via-black/70 dark:to-black/50" />
-            </div>
-          ))}
-
-          {/* Contenu textuel superposé */}
-          <div className="relative z-10 flex min-h-[500px] flex-col justify-between p-6 sm:p-10 md:p-12">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
-                  alt="Logo Boutique Bisou"
-                  className="h-12 w-auto object-contain brightness-0 invert"
-                />
-                <span className="hidden rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md sm:inline-block">
-                  Boutique Bisou
-                </span>
-              </div>
-            </div>
-
-            {/* Slide active */}
-            <div className="my-auto max-w-xl py-6">
-              {HERO_SLIDES.map((slide, index) => {
-                if (index !== currentSlide) return null;
-                return (
-                  <div
-                    key={slide.id}
-                    className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out space-y-4"
-                  >
-                    <span className="inline-block rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-3.5 py-1 text-xs font-bold text-white shadow-lg">
-                      {slide.badge}
-                    </span>
-                    <h1 className="text-3xl font-black text-white sm:text-5xl tracking-tight leading-tight">
-                      {slide.titre}
-                    </h1>
-                    <p className="text-sm sm:text-base text-zinc-200 leading-relaxed">
-                      {slide.description}
-                    </p>
-                    <div className="pt-2 flex flex-wrap gap-3">
-                      <a
-                        href={slide.ctaLink}
-                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-2.5 text-xs font-bold text-white shadow-md transition hover:scale-[1.01] active:scale-[0.98]"
-                      >
-                        <span>{slide.ctaText}</span>
-                        <span>→</span>
-                      </a>
-                      <a
-                        href="/equipe"
-                        className="inline-block rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
-                      >
-                        L'Équipe
-                      </a>
-                      <a
-                        href="/verif"
-                        className="inline-block rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
-                      >
-                        Tableau de bord
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Puces de progression */}
-            <div className="flex items-center gap-2">
-              {HERO_SLIDES.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setCurrentSlide(index)}
-                  aria-label={`Slide ${index + 1}`}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    index === currentSlide
-                      ? "w-8 bg-pink-500"
-                      : "w-2 bg-white/40 hover:bg-white/70"
+              >
+                <div
+                  className={`h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-300 ${
+                    toggleActive ? "translate-x-6" : "translate-x-0"
                   }`}
                 />
-              ))}
+              </div>
+            </button>
+
+            {/* Badges / Pilules en bas à gauche */}
+            <div className="absolute bottom-6 left-6 flex flex-wrap gap-3 z-10">
+              <span className="rounded-full border border-white/50 bg-white/20 px-5 py-2 text-xs sm:text-sm font-semibold tracking-wider text-white backdrop-blur-md uppercase">
+                {slide.topBadgeLeft}
+              </span>
+              <span className="rounded-full border border-white/50 bg-white/20 px-5 py-2 text-xs sm:text-sm font-semibold tracking-wider text-white backdrop-blur-md uppercase">
+                {slide.topBadgeRight}
+              </span>
             </div>
           </div>
+
+          {/* Rangée inférieure (2 cartes) */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Carte Photo avec flèche (2/3) */}
+            <a
+              href={slide.cardLeftLink}
+              className="group relative h-[240px] sm:h-[280px] md:h-[320px] overflow-hidden rounded-[2.5rem] bg-zinc-900 shadow-xl sm:col-span-2"
+            >
+              <img
+                src={slide.cardLeftImage}
+                alt="Produit Famille Agri"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {/* Bouton Flèche Haut-Droite */}
+              <div className="absolute top-6 right-6 flex h-14 w-14 items-center justify-center rounded-3xl bg-white/90 text-zinc-900 shadow-lg backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                <svg
+                  className="h-7 w-7 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
+              </div>
+            </a>
+
+            {/* Carte Verte DESIGN (1/3) */}
+            <div className="relative flex h-[240px] sm:h-[280px] md:h-[320px] flex-col justify-between rounded-[2.5rem] bg-[#7CD92A] p-8 shadow-xl">
+              <h2 className="text-4xl font-extrabold tracking-tight text-white/90 sm:text-5xl md:text-6xl uppercase">
+                {slide.cardRightTitle}
+              </h2>
+              <div className="flex justify-end">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg">
+                  <svg
+                    className="h-7 w-7 text-[#7CD92A]"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION RACCOURCIS & ÉQUIPE --- */}
+        <div className="flex w-full flex-wrap justify-center gap-3">
+          <a
+            href="/boutique"
+            className="rounded-2xl bg-zinc-900 px-6 py-3 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Voir les articles
+          </a>
+          <a
+            href="/equipe"
+            className="rounded-2xl border border-zinc-200 bg-white/80 px-6 py-3 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
+          >
+            L'Équipe
+          </a>
+          <a
+            href="/verif"
+            className="rounded-2xl border border-zinc-200 bg-white/80 px-6 py-3 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
+          >
+            Tableau de bord
+          </a>
         </div>
 
         {/* --- SECTION PRÉSENTATION & PILE DE PHOTOS --- */}
         <div className="flex w-full flex-col items-center justify-between gap-12 lg:flex-row lg:px-4">
           <div className="max-w-md text-center lg:text-left">
             <span className="mb-3 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
-              Ambiance & Décoration
+              Ambiance & Coulisses
             </span>
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
               L'univers Boutique Bisou en images
@@ -342,7 +346,7 @@ export default function HomePage() {
                 href="https://ko-fi.com/vth"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200/80 bg-white/80 px-5 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-200"
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/80 px-5 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-200"
               >
                 <img
                   src="https://storage.vth-mc.fr/img/web/marche.gif"
@@ -390,7 +394,7 @@ export default function HomePage() {
                       willChange: "transform, opacity",
                     }}
                   >
-                    <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
+                    <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/10">
                       <img
                         src={STACK_IMAGES[imgIndex]}
                         alt={`Photo boutique ${imgIndex + 1}`}
@@ -432,7 +436,7 @@ export default function HomePage() {
               Nos T-Shirts & Articles en rayon
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Survolez un article avec la souris pour interrompre le défilement.
+              Survolez un article pour interrompre le défilement.
             </p>
           </div>
 
@@ -547,7 +551,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+              className="w-full shrink-0 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
             >
               {isSubmitting ? "Inscription..." : "M'inscrire"}
             </button>
