@@ -252,10 +252,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Pile de photos originale */}
+          {/* Pile de photos originale adaptative */}
           <div className="flex items-center justify-center lg:pr-6">
             <div
-              className="relative h-[480px] w-[300px] shrink-0 sm:h-[520px] sm:w-[340px]"
+              className="relative aspect-[3/4] w-72 sm:w-80 md:w-96 shrink-0"
               onMouseEnter={() => setPaused(true)}
               onMouseLeave={() => setPaused(false)}
             >
