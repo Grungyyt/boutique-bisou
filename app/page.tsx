@@ -21,9 +21,9 @@ const TAGS: [string, string][] = [
 ];
 
 const ROT_JITTER = [0, -6, 5, -4, 7];
-const SWIPE_MS = 550;
-const SETTLE_MS = 480;
-const FRONT_HOLD_MS = 2400;
+const SWIPE_MS = 800;       
+const SETTLE_MS = 600;       
+const FRONT_HOLD_MS = 3500;  
 const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + FRONT_HOLD_MS;
 
 // Type pour les produits de l'API
