@@ -252,13 +252,21 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Pile de photos originale adaptative */}
+          {/* Pile de photos originale aux dimensions réelles de l'image */}
           <div className="flex items-center justify-center lg:pr-6">
             <div
-              className="relative aspect-[3/4] w-72 sm:w-80 md:w-96 shrink-0"
+              className="relative w-80 sm:w-96 shrink-0"
               onMouseEnter={() => setPaused(true)}
               onMouseLeave={() => setPaused(false)}
             >
+              {/* Image invisible "guide" pour imposer les dimensions exactes et le ratio naturel au conteneur */}
+              <img
+                src={IMAGES[0]}
+                alt=""
+                className="w-full h-auto opacity-0 pointer-events-none block"
+                aria-hidden="true"
+              />
+
               {order.map((imgIndex, pos) => {
                 const isFront = pos === 0;
                 const isSwiping = swipingId === imgIndex;
@@ -292,7 +300,7 @@ export default function HomePage() {
                       <img
                         src={IMAGES[imgIndex]}
                         alt={`Vêtement ${imgIndex + 1}`}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain"
                         draggable={false}
                       />
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
