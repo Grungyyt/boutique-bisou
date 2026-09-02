@@ -10,6 +10,7 @@ const IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
+  "https://storage.vth-mc.fr/pierred-dubois/img/web/pose.avif",
 ];
 
 const TAGS: [string, string][] = [
