@@ -3,30 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Slides d'en-tête (Grille Famille Agri)
-const HERO_SLIDES = [
-  {
-    id: 1,
-    topBadgeLeft: "FAMILLE AGRI 2026",
-    topBadgeRight: "STERVIO & GERMAIN",
-    topImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
-    cardLeftImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
-    cardLeftLink: "/boutique",
-    cardRightTitle: "DESIGN",
-  },
-  {
-    id: 2,
-    topBadgeLeft: "BOUTIQUE BISOU",
-    topBadgeRight: "COLLECTION 2026",
-    topImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
-    cardLeftImage: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(4).jpg",
-    cardLeftLink: "/boutique",
-    cardRightTitle: "QUALITÉ",
-  },
-];
-
-// Pile de cartes d'origine
-const STACK_IMAGES = [
+// Photos et configurations de la pile d'origine
+const IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
@@ -34,7 +12,7 @@ const STACK_IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
 ];
 
-const STACK_TAGS: [string, string][] = [
+const TAGS: [string, string][] = [
   ["BOUTIQUE BISOU", "Ouverture 2025 2026"],
   ["BOUTIQUE BISOU", "Dans la boutique"],
   ["BOUTIQUE BISOU", "Décoration"],
@@ -48,6 +26,7 @@ const SETTLE_MS = 480;
 const FRONT_HOLD_MS = 2400;
 const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + FRONT_HOLD_MS;
 
+// Type pour les produits de l'API
 interface Produit {
   id: string;
   nom: string;
@@ -64,7 +43,7 @@ interface Produit {
 export default function HomePage() {
   const router = useRouter();
 
-  // --- Vérification opérationnelle ---
+  // --- Vérification de l'état opérationnel du service ---
   useEffect(() => {
     const dernierCheck = Number(sessionStorage.getItem("bisou_eta_checked_at") || 0);
     const recent = Date.now() - dernierCheck < 3000;
@@ -73,27 +52,27 @@ export default function HomePage() {
     }
   }, [router]);
 
-  // --- Carrousel Grille Hero ---
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [toggleActive, setToggleActive] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // --- Pile de cartes d'origine ---
-  const [order, setOrder] = useState<number[]>(STACK_IMAGES.map((_, i) => i));
+  // --- États pour la pile de cartes originale ---
+  const [order, setOrder] = useState<number[]>(IMAGES.map((_, i) => i));
   const [swipingId, setSwipingId] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
-  const stackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const runStackCycle = useCallback(() => {
-    stackTimerRef.current = setTimeout(() => {
+  // --- États pour les produits de l'API ---
+  const [produits, setProduits] = useState<Produit[]>([]);
+  const [loadingProduits, setLoadingProduits] = useState(true);
+
+  // --- États pour la newsletter ---
+  const [email, setEmail] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Animation de la pile de cartes d'origine
+  const runCycle = useCallback(() => {
+    timerRef.current = setTimeout(() => {
       if (paused) {
-        runStackCycle();
+        runCycle();
         return;
       }
       setOrder((prev) => {
@@ -106,21 +85,18 @@ export default function HomePage() {
         setSwipingId(null);
       }, SWIPE_MS);
 
-      runStackCycle();
+      runCycle();
     }, HOLD_PAUSE);
   }, [paused]);
 
   useEffect(() => {
-    runStackCycle();
+    runCycle();
     return () => {
-      if (stackTimerRef.current) clearTimeout(stackTimerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [runStackCycle]);
+  }, [runCycle]);
 
-  // --- Produits API ---
-  const [produits, setProduits] = useState<Produit[]>([]);
-  const [loadingProduits, setLoadingProduits] = useState(true);
-
+  // Récupération des articles depuis l'API
   useEffect(() => {
     const fetchProduits = async () => {
       try {
@@ -141,12 +117,7 @@ export default function HomePage() {
     fetchProduits();
   }, []);
 
-  // --- Newsletter ---
-  const [email, setEmail] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
-  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  // Soumission newsletter
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || isSubmitting) return;
@@ -156,11 +127,14 @@ export default function HomePage() {
     setStatusType("");
 
     try {
-      const res = await fetch("https://api.boutique-bisou.vth-mc.fr/newsletter/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        "https://api.boutique-bisou.vth-mc.fr/newsletter/subscribe",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
       const data = await res.json();
 
       if (res.ok) {
@@ -179,6 +153,7 @@ export default function HomePage() {
     }
   };
 
+  // Duplication de la liste pour défilement infini du marquee
   const displayProduits =
     produits.length > 0
       ? produits.length < 5
@@ -186,10 +161,9 @@ export default function HomePage() {
         : [...produits, ...produits]
       : [];
 
-  const slide = HERO_SLIDES[currentSlide];
-
   return (
-    <div className="relative mx-auto max-w-6xl px-4 py-6 md:py-12">
+    <div className="relative mx-auto max-w-6xl px-4 py-8 md:py-16">
+      {/* CSS du défilement Marquee */}
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -218,150 +192,70 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="flex flex-col items-center gap-14">
+      <div className="flex flex-col items-center gap-20">
         
-        {/* --- HERO BANNER EXACTEMENT COMME FAMILLEAGRI.FR --- */}
-        <div className="grid w-full gap-4">
-          {/* Carte Supérieure Grande */}
-          <div className="relative h-[300px] sm:h-[400px] md:h-[460px] w-full overflow-hidden rounded-[2.5rem] bg-zinc-900 shadow-xl">
-            <img
-              src={slide.topImage}
-              alt="Famille Agri Top"
-              className="h-full w-full object-cover transition-opacity duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
-
-            {/* Toggle vert en haut à gauche */}
-            <button
-              type="button"
-              onClick={() => setToggleActive(!toggleActive)}
-              className="absolute top-6 left-6 z-10 focus:outline-none"
-            >
-              <div
-                className={`flex h-8 w-14 items-center rounded-full p-1 transition-colors duration-300 ${
-                  toggleActive ? "bg-[#7CD92A]" : "bg-zinc-600"
-                }`}
-              >
-                <div
-                  className={`h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-300 ${
-                    toggleActive ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </button>
-
-            {/* Badges / Pilules en bas à gauche */}
-            <div className="absolute bottom-6 left-6 flex flex-wrap gap-3 z-10">
-              <span className="rounded-full border border-white/50 bg-white/20 px-5 py-2 text-xs sm:text-sm font-semibold tracking-wider text-white backdrop-blur-md uppercase">
-                {slide.topBadgeLeft}
-              </span>
-              <span className="rounded-full border border-white/50 bg-white/20 px-5 py-2 text-xs sm:text-sm font-semibold tracking-wider text-white backdrop-blur-md uppercase">
-                {slide.topBadgeRight}
-              </span>
-            </div>
-          </div>
-
-          {/* Rangée inférieure (2 cartes) */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {/* Carte Photo avec flèche (2/3) */}
-            <a
-              href={slide.cardLeftLink}
-              className="group relative h-[240px] sm:h-[280px] md:h-[320px] overflow-hidden rounded-[2.5rem] bg-zinc-900 shadow-xl sm:col-span-2"
-            >
-              <img
-                src={slide.cardLeftImage}
-                alt="Produit Famille Agri"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              {/* Bouton Flèche Haut-Droite */}
-              <div className="absolute top-6 right-6 flex h-14 w-14 items-center justify-center rounded-3xl bg-white/90 text-zinc-900 shadow-lg backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
-                <svg
-                  className="h-7 w-7 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2.5"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
-              </div>
-            </a>
-
-            {/* Carte Verte DESIGN (1/3) */}
-            <div className="relative flex h-[240px] sm:h-[280px] md:h-[320px] flex-col justify-between rounded-[2.5rem] bg-[#7CD92A] p-8 shadow-xl">
-              <h2 className="text-4xl font-extrabold tracking-tight text-white/90 sm:text-5xl md:text-6xl uppercase">
-                {slide.cardRightTitle}
-              </h2>
-              <div className="flex justify-end">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg">
-                  <svg
-                    className="h-7 w-7 text-[#7CD92A]"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* --- SECTION RACCOURCIS & ÉQUIPE --- */}
-        <div className="flex w-full flex-wrap justify-center gap-3">
-          <a
-            href="/boutique"
-            className="rounded-2xl bg-zinc-900 px-6 py-3 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Voir les articles
-          </a>
-          <a
-            href="/equipe"
-            className="rounded-2xl border border-zinc-200 bg-white/80 px-6 py-3 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
-          >
-            L'Équipe
-          </a>
-          <a
-            href="/verif"
-            className="rounded-2xl border border-zinc-200 bg-white/80 px-6 py-3 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
-          >
-            Tableau de bord
-          </a>
-        </div>
-
-        {/* --- SECTION PRÉSENTATION & PILE DE PHOTOS --- */}
+        {/* --- SECTION HERO DIRECTEMENT SUR LE FOND --- */}
         <div className="flex w-full flex-col items-center justify-between gap-12 lg:flex-row lg:px-4">
+          {/* Texte d'intro */}
           <div className="max-w-md text-center lg:text-left">
-            <span className="mb-3 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
-              Ambiance & Coulisses
+            <div className="mb-6 flex justify-center lg:justify-start">
+              <img
+                src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+                alt="Logo Boutique Bisou"
+                className="h-28 w-auto object-contain"
+              />
+            </div>
+
+            <span className="mb-4 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
+              Boutique Bisou
             </span>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
-              L'univers Boutique Bisou en images
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Découvrez la vie en boutique, les ouvertures média et les coulisses de notre projet solidaire.
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-5xl">
+              Des vêtements choisis avec cœur
+            </h1>
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Chaque pièce a sa propre histoire. Échangez vos tickets contre des
+              vêtements uniques, sélectionnés un à un.
             </p>
-            <div className="mt-6 flex justify-center lg:justify-start">
+
+            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+              <a
+                href="/boutique"
+                className="inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98]"
+              >
+                Voir les articles
+              </a>
+              <a
+                href="/equipe"
+                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
+              >
+                Voir l'Équipe
+              </a>
+              <a
+                href="/verif"
+                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
+              >
+                Tableau de bord
+              </a>
               <a
                 href="https://ko-fi.com/vth"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/80 px-5 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-200"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
               >
                 <img
                   src="https://storage.vth-mc.fr/img/web/marche.gif"
                   alt=""
                   className="h-4 w-auto"
                 />
-                <span>Soutenir le projet</span>
+                Soutenir
               </a>
             </div>
           </div>
 
-          {/* Pile interactive */}
+          {/* Pile de photos originale */}
           <div className="flex items-center justify-center lg:pr-6">
             <div
-              className="relative h-[440px] w-[280px] shrink-0 sm:h-[480px] sm:w-[320px]"
+              className="relative h-[480px] w-[300px] shrink-0 sm:h-[520px] sm:w-[340px]"
               onMouseEnter={() => setPaused(true)}
               onMouseLeave={() => setPaused(false)}
             >
@@ -394,10 +288,10 @@ export default function HomePage() {
                       willChange: "transform, opacity",
                     }}
                   >
-                    <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/10">
+                    <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
                       <img
-                        src={STACK_IMAGES[imgIndex]}
-                        alt={`Photo boutique ${imgIndex + 1}`}
+                        src={IMAGES[imgIndex]}
+                        alt={`Vêtement ${imgIndex + 1}`}
                         className="h-full w-full object-cover"
                         draggable={false}
                       />
@@ -411,7 +305,7 @@ export default function HomePage() {
 
                       {isFront && (
                         <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 max-w-[80%]">
-                          {STACK_TAGS[imgIndex].map((tag) => (
+                          {TAGS[imgIndex].map((tag) => (
                             <span
                               key={tag}
                               className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
@@ -421,22 +315,52 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
+
+                      {isFront && !isSwiping && (
+                        <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 17 17 7M9 7h8v8" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
+
+              <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {IMAGES.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      order[0] === i
+                        ? "w-5 bg-pink-500"
+                        : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* --- CARROUSEL DES ARTICLES EN RAYON --- */}
-        <div className="w-full flex flex-col items-center gap-6 rounded-3xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 shadow-xl backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
+        {/* --- SECTION CARROUSEL (ARTICLES API) EN GLASSMORPHISME --- */}
+        <div className="w-full flex flex-col items-center gap-6 rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
           <div className="text-center">
-            <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               Nos T-Shirts & Articles en rayon
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Survolez un article pour interrompre le défilement.
+              Survolez un article avec la souris pour stopper le défilement.
             </p>
           </div>
 
@@ -459,15 +383,17 @@ export default function HomePage() {
                   <a
                     key={`${item.id}-${idx}`}
                     href="/boutique"
-                    className="group flex w-[260px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/80"
+                    className="group flex w-[270px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/80"
                   >
-                    <div className="relative h-48 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                    <div className="relative h-52 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
                       <img
                         src={item.photo_url}
                         alt={item.nom}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         draggable={false}
                       />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
+
                       <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
                         <span
                           className={`h-2 w-2 rounded-full ${
@@ -527,16 +453,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- SECTION NEWSLETTER --- */}
-        <div className="w-full max-w-xl rounded-3xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 text-center shadow-xl backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
+        {/* --- SECTION NEWSLETTER EN GLASSMORPHISME --- */}
+        <div className="w-full max-w-xl rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500">
             <span className="text-xl">💌</span>
           </div>
-          <h3 className="mt-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+          <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Alerte nouveaux vêtements
           </h3>
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 max-w-sm mx-auto">
-            Soyez immédiatement informé dès qu'un nouvel article est disponible en boutique.
+            Soyez le premier informé dès qu’un nouvel article est ajouté à la boutique.
           </p>
 
           <form onSubmit={handleSubscribe} className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -551,7 +477,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full shrink-0 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
             >
               {isSubmitting ? "Inscription..." : "M'inscrire"}
             </button>
