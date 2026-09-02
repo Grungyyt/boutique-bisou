@@ -3,8 +3,39 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Photos et configurations de la pile d'origine
-const IMAGES = [
+// Slider d'en-tête (Style Famille Agri)
+const HERO_SLIDES = [
+  {
+    id: 1,
+    badge: "✨ Nouveautés 2026",
+    titre: "Des vêtements choisis avec cœur",
+    description: "Chaque pièce a sa propre histoire. Échangez vos tickets contre des vêtements uniques.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
+    ctaText: "Voir les articles",
+    ctaLink: "/boutique",
+  },
+  {
+    id: 2,
+    badge: "🎟️ Échange solidaire",
+    titre: "Une seconde vie pour vos tenues",
+    description: "Découvrez nos collections sélectionnées pièce par pièce pour la communauté.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
+    ctaText: "Accéder à la boutique",
+    ctaLink: "/boutique",
+  },
+  {
+    id: 3,
+    badge: "📌 Réservation rapide",
+    titre: "Réservez en ligne, retirez en boutique",
+    description: "Obtenez votre numéro à 6 chiffres et venez récupérer vos coups de cœur.",
+    image: "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
+    ctaText: "Explorer le catalogue",
+    ctaLink: "/boutique",
+  },
+];
+
+// Pile de cartes d'origine
+const STACK_IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(1).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(2).jpg",
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(3).jpg",
@@ -12,7 +43,7 @@ const IMAGES = [
   "https://storage.vth-mc.fr/pierred-dubois/img/web/1%20(5).jpg",
 ];
 
-const TAGS: [string, string][] = [
+const STACK_TAGS: [string, string][] = [
   ["BOUTIQUE BISOU", "Ouverture 2025 2026"],
   ["BOUTIQUE BISOU", "Dans la boutique"],
   ["BOUTIQUE BISOU", "Décoration"],
@@ -26,7 +57,6 @@ const SETTLE_MS = 480;
 const FRONT_HOLD_MS = 2400;
 const HOLD_PAUSE = SWIPE_MS + SETTLE_MS + FRONT_HOLD_MS;
 
-// Type pour les produits de l'API
 interface Produit {
   id: string;
   nom: string;
@@ -43,7 +73,7 @@ interface Produit {
 export default function HomePage() {
   const router = useRouter();
 
-  // --- Vérification de l'état opérationnel du service ---
+  // --- Vérification opérationnelle ---
   useEffect(() => {
     const dernierCheck = Number(sessionStorage.getItem("bisou_eta_checked_at") || 0);
     const recent = Date.now() - dernierCheck < 3000;
@@ -52,27 +82,26 @@ export default function HomePage() {
     }
   }, [router]);
 
-  // --- États pour la pile de cartes originale ---
-  const [order, setOrder] = useState<number[]>(IMAGES.map((_, i) => i));
+  // --- Carrousel Hero (Famille Agri) ---
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, []);
+
+  // --- Pile de cartes d'origine ---
+  const [order, setOrder] = useState<number[]>(STACK_IMAGES.map((_, i) => i));
   const [swipingId, setSwipingId] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- États pour les produits de l'API ---
-  const [produits, setProduits] = useState<Produit[]>([]);
-  const [loadingProduits, setLoadingProduits] = useState(true);
-
-  // --- États pour la newsletter ---
-  const [email, setEmail] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
-  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Animation de la pile de cartes d'origine
-  const runCycle = useCallback(() => {
-    timerRef.current = setTimeout(() => {
+  const runStackCycle = useCallback(() => {
+    stackTimerRef.current = setTimeout(() => {
       if (paused) {
-        runCycle();
+        runStackCycle();
         return;
       }
       setOrder((prev) => {
@@ -85,18 +114,21 @@ export default function HomePage() {
         setSwipingId(null);
       }, SWIPE_MS);
 
-      runCycle();
+      runStackCycle();
     }, HOLD_PAUSE);
   }, [paused]);
 
   useEffect(() => {
-    runCycle();
+    runStackCycle();
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (stackTimerRef.current) clearTimeout(stackTimerRef.current);
     };
-  }, [runCycle]);
+  }, [runStackCycle]);
 
-  // Récupération des articles depuis l'API
+  // --- Produits API ---
+  const [produits, setProduits] = useState<Produit[]>([]);
+  const [loadingProduits, setLoadingProduits] = useState(true);
+
   useEffect(() => {
     const fetchProduits = async () => {
       try {
@@ -117,7 +149,12 @@ export default function HomePage() {
     fetchProduits();
   }, []);
 
-  // Soumission newsletter
+  // --- Newsletter ---
+  const [email, setEmail] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || isSubmitting) return;
@@ -127,14 +164,11 @@ export default function HomePage() {
     setStatusType("");
 
     try {
-      const res = await fetch(
-        "https://api.boutique-bisou.vth-mc.fr/newsletter/subscribe",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const res = await fetch("https://api.boutique-bisou.vth-mc.fr/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json();
 
       if (res.ok) {
@@ -153,7 +187,6 @@ export default function HomePage() {
     }
   };
 
-  // Duplication de la liste pour défilement infini du marquee
   const displayProduits =
     produits.length > 0
       ? produits.length < 5
@@ -163,7 +196,6 @@ export default function HomePage() {
 
   return (
     <div className="relative mx-auto max-w-6xl px-4 py-8 md:py-16">
-      {/* CSS du défilement Marquee */}
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -192,70 +224,140 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="flex flex-col items-center gap-20">
+      <div className="flex flex-col items-center gap-16">
         
-        {/* --- SECTION HERO DIRECTEMENT SUR LE FOND --- */}
-        <div className="flex w-full flex-col items-center justify-between gap-12 lg:flex-row lg:px-4">
-          {/* Texte d'intro */}
-          <div className="max-w-md text-center lg:text-left">
-            <div className="mb-6 flex justify-center lg:justify-start">
+        {/* --- BANNIÈRE HERO ANIMÉE (STYLE FAMILLE AGRI) --- */}
+        <div className="relative min-h-[500px] w-full overflow-hidden rounded-3xl border border-zinc-200/80 shadow-2xl backdrop-blur-xl dark:border-zinc-800/80">
+          {/* Images en fond avec fondu et zoom */}
+          {HERO_SLIDES.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                index === currentSlide ? "opacity-100 z-0" : "opacity-0 -z-10"
+              }`}
+            >
               <img
-                src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
-                alt="Logo Boutique Bisou"
-                className="h-28 w-auto object-contain"
+                src={slide.image}
+                alt={slide.titre}
+                className={`h-full w-full object-cover transition-transform duration-[7000ms] ease-out ${
+                  index === currentSlide ? "scale-110" : "scale-100"
+                }`}
               />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30 dark:from-black/90 dark:via-black/70 dark:to-black/50" />
+            </div>
+          ))}
+
+          {/* Contenu textuel superposé */}
+          <div className="relative z-10 flex min-h-[500px] flex-col justify-between p-6 sm:p-10 md:p-12">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://storage.vth-mc.fr/pierred-dubois/img/web/logo-bisou.png"
+                  alt="Logo Boutique Bisou"
+                  className="h-12 w-auto object-contain brightness-0 invert"
+                />
+                <span className="hidden rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md sm:inline-block">
+                  Boutique Bisou
+                </span>
+              </div>
             </div>
 
-            <span className="mb-4 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
-              Boutique Bisou
-            </span>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-5xl">
-              Des vêtements choisis avec cœur
-            </h1>
-            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Chaque pièce a sa propre histoire. Échangez vos tickets contre des
-              vêtements uniques, sélectionnés un à un.
-            </p>
+            {/* Slide active */}
+            <div className="my-auto max-w-xl py-6">
+              {HERO_SLIDES.map((slide, index) => {
+                if (index !== currentSlide) return null;
+                return (
+                  <div
+                    key={slide.id}
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out space-y-4"
+                  >
+                    <span className="inline-block rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-3.5 py-1 text-xs font-bold text-white shadow-lg">
+                      {slide.badge}
+                    </span>
+                    <h1 className="text-3xl font-black text-white sm:text-5xl tracking-tight leading-tight">
+                      {slide.titre}
+                    </h1>
+                    <p className="text-sm sm:text-base text-zinc-200 leading-relaxed">
+                      {slide.description}
+                    </p>
+                    <div className="pt-2 flex flex-wrap gap-3">
+                      <a
+                        href={slide.ctaLink}
+                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-6 py-2.5 text-xs font-bold text-white shadow-md transition hover:scale-[1.01] active:scale-[0.98]"
+                      >
+                        <span>{slide.ctaText}</span>
+                        <span>→</span>
+                      </a>
+                      <a
+                        href="/equipe"
+                        className="inline-block rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+                      >
+                        L'Équipe
+                      </a>
+                      <a
+                        href="/verif"
+                        className="inline-block rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+                      >
+                        Tableau de bord
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-              <a
-                href="/boutique"
-                className="inline-block rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98]"
-              >
-                Voir les articles
-              </a>
-              <a
-                href="/equipe"
-                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
-              >
-                Voir l'Équipe
-              </a>
-              <a
-                href="/verif"
-                className="inline-block rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
-              >
-                Tableau de bord
-              </a>
+            {/* Puces de progression */}
+            <div className="flex items-center gap-2">
+              {HERO_SLIDES.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setCurrentSlide(index)}
+                  aria-label={`Slide ${index + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    index === currentSlide
+                      ? "w-8 bg-pink-500"
+                      : "w-2 bg-white/40 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION PRÉSENTATION & PILE DE PHOTOS --- */}
+        <div className="flex w-full flex-col items-center justify-between gap-12 lg:flex-row lg:px-4">
+          <div className="max-w-md text-center lg:text-left">
+            <span className="mb-3 inline-block rounded-lg bg-pink-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-pink-500 backdrop-blur-md">
+              Ambiance & Décoration
+            </span>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+              L'univers Boutique Bisou en images
+            </h2>
+            <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Découvrez la vie en boutique, les ouvertures média et les coulisses de notre projet solidaire.
+            </p>
+            <div className="mt-6 flex justify-center lg:justify-start">
               <a
                 href="https://ko-fi.com/vth"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-white/70 px-5 py-2.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:bg-zinc-900/90"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200/80 bg-white/80 px-5 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur-md transition hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-200"
               >
                 <img
                   src="https://storage.vth-mc.fr/img/web/marche.gif"
                   alt=""
                   className="h-4 w-auto"
                 />
-                Soutenir
+                <span>Soutenir le projet</span>
               </a>
             </div>
           </div>
 
-          {/* Pile de photos originale */}
+          {/* Pile interactive */}
           <div className="flex items-center justify-center lg:pr-6">
             <div
-              className="relative h-[480px] w-[300px] shrink-0 sm:h-[520px] sm:w-[340px]"
+              className="relative h-[440px] w-[280px] shrink-0 sm:h-[480px] sm:w-[320px]"
               onMouseEnter={() => setPaused(true)}
               onMouseLeave={() => setPaused(false)}
             >
@@ -290,8 +392,8 @@ export default function HomePage() {
                   >
                     <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
                       <img
-                        src={IMAGES[imgIndex]}
-                        alt={`Vêtement ${imgIndex + 1}`}
+                        src={STACK_IMAGES[imgIndex]}
+                        alt={`Photo boutique ${imgIndex + 1}`}
                         className="h-full w-full object-cover"
                         draggable={false}
                       />
@@ -305,7 +407,7 @@ export default function HomePage() {
 
                       {isFront && (
                         <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 max-w-[80%]">
-                          {TAGS[imgIndex].map((tag) => (
+                          {STACK_TAGS[imgIndex].map((tag) => (
                             <span
                               key={tag}
                               className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white backdrop-blur-md"
@@ -315,52 +417,22 @@ export default function HomePage() {
                           ))}
                         </div>
                       )}
-
-                      {isFront && !isSwiping && (
-                        <div className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-md">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M7 17 17 7M9 7h8v8" />
-                          </svg>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
               })}
-
-              <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1.5">
-                {IMAGES.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
-                      order[0] === i
-                        ? "w-5 bg-pink-500"
-                        : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
-                    }`}
-                  />
-                ))}
-              </div>
             </div>
           </div>
         </div>
 
-        {/* --- SECTION CARROUSEL (ARTICLES API) EN GLASSMORPHISME --- */}
-        <div className="w-full flex flex-col items-center gap-6 rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
+        {/* --- CARROUSEL DES ARTICLES EN RAYON --- */}
+        <div className="w-full flex flex-col items-center gap-6 rounded-3xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 shadow-xl backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">
               Nos T-Shirts & Articles en rayon
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Survolez un article avec la souris pour stopper le défilement.
+              Survolez un article avec la souris pour interrompre le défilement.
             </p>
           </div>
 
@@ -383,17 +455,15 @@ export default function HomePage() {
                   <a
                     key={`${item.id}-${idx}`}
                     href="/boutique"
-                    className="group flex w-[270px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/80"
+                    className="group flex w-[260px] shrink-0 flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white/80 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/50 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/80"
                   >
-                    <div className="relative h-52 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                    <div className="relative h-48 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
                       <img
                         src={item.photo_url}
                         alt={item.nom}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         draggable={false}
                       />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
-
                       <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
                         <span
                           className={`h-2 w-2 rounded-full ${
@@ -453,16 +523,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- SECTION NEWSLETTER EN GLASSMORPHISME --- */}
-        <div className="w-full max-w-xl rounded-2xl border border-zinc-200/60 bg-white/60 p-6 md:p-8 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60">
+        {/* --- SECTION NEWSLETTER --- */}
+        <div className="w-full max-w-xl rounded-3xl border border-zinc-200/80 bg-white/80 p-6 md:p-8 text-center shadow-xl backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/10 text-pink-500">
             <span className="text-xl">💌</span>
           </div>
-          <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h3 className="mt-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
             Alerte nouveaux vêtements
           </h3>
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 max-w-sm mx-auto">
-            Soyez le premier informé dès qu’un nouvel article est ajouté à la boutique.
+            Soyez immédiatement informé dès qu'un nouvel article est disponible en boutique.
           </p>
 
           <form onSubmit={handleSubscribe} className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -477,7 +547,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+              className="w-full shrink-0 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 sm:w-auto"
             >
               {isSubmitting ? "Inscription..." : "M'inscrire"}
             </button>
