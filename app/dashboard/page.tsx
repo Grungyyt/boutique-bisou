@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL = "https://api.boutique-bisou.vth-mc.fr";
 const VERIF_URL = "/verif";
+const TUTORIEL_NOM = "dashboard";
 
 type Stats = {
   totalProduits: number;
@@ -58,6 +59,38 @@ const MODULES = [
   },
 ];
 
+type TutorielStep = {
+  title: string;
+  text: string;
+  // clé de la case à mettre en valeur : "stats" pour le bloc de statistiques,
+  // le href du module pour une case de la grille "Gestion", ou null pour une
+  // étape sans case ciblée (intro / conclusion, affichée centrée).
+  targetKey: string | null;
+};
+
+const TUTORIEL_STEPS: TutorielStep[] = [
+  {
+    title: "Bienvenue sur le tableau de bord 👋",
+    text: "On te fait faire un tour rapide de chaque case pour que tu saches à quoi elle sert. Tu peux passer le tuto à tout moment, il ne réapparaîtra plus une fois terminé.",
+    targetKey: null,
+  },
+  {
+    title: "Tes statistiques en direct",
+    text: "Ces 3 cases affichent en temps réel le nombre de vêtements en stock, la valeur totale en tickets, et les tickets actuellement en circulation chez les élèves.",
+    targetKey: "stats",
+  },
+  ...MODULES.map((mod) => ({
+    title: `${mod.emoji} ${mod.title}`,
+    text: `${mod.description}. Clique sur cette case pour y accéder.`,
+    targetKey: mod.href,
+  })),
+  {
+    title: "C'est tout bon ! 🎉",
+    text: "Tu connais maintenant toutes les cases du dashboard. Bonne gestion de la boutique !",
+    targetKey: null,
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -72,6 +105,127 @@ export default function DashboardPage() {
   // Suivi des requêtes HTTP
   const [currentRequest, setCurrentRequest] = useState<string | null>(null);
   const [failedRequest, setFailedRequest] = useState<string | null>(null);
+
+  // ── Tuto de première connexion ──
+  const [showTutoriel, setShowTutoriel] = useState(false);
+  const [tutorielStep, setTutorielStep] = useState(0);
+  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
+  const moduleRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+
+  // Vérifie auprès de l'API si le compte connecté a déjà vu le tuto du dashboard
+  useEffect(() => {
+    if (!isAllowed) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/tutoriel/${TUTORIEL_NOM}`, {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && !data.vu) {
+          setShowTutoriel(true);
+        }
+      } catch {
+        // Si l'API ne répond pas, on n'affiche pas le tuto pour ne pas bloquer l'accès au dashboard
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAllowed]);
+
+  // Recalcule la position de la case à mettre en valeur à chaque étape (+ resize/scroll)
+  useEffect(() => {
+    if (!showTutoriel) return;
+
+    const step = TUTORIEL_STEPS[tutorielStep];
+
+    const updateRect = () => {
+      if (!step.targetKey) {
+        setHighlightRect(null);
+        return;
+      }
+      const el =
+        step.targetKey === "stats" ? statsRef.current : moduleRefs.current[step.targetKey];
+      if (el) {
+        setHighlightRect(el.getBoundingClientRect());
+      } else {
+        setHighlightRect(null);
+      }
+    };
+
+    const el =
+      step.targetKey === "stats" ? statsRef.current : step.targetKey ? moduleRefs.current[step.targetKey] : null;
+    if (el) {
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+    const t = setTimeout(updateRect, 300);
+
+    window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, true);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
+    };
+  }, [showTutoriel, tutorielStep]);
+
+  // Bloque le scroll de la page tant que le tuto est affiché
+  useEffect(() => {
+    if (showTutoriel) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
+  }, [showTutoriel]);
+
+  const marquerTutorielVu = async () => {
+    try {
+      await fetch(`${API_URL}/tutoriel/${TUTORIEL_NOM}/vu`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Tant pis : au pire le tuto réapparaîtra à la prochaine connexion
+    }
+  };
+
+  const fermerTutoriel = () => {
+    setShowTutoriel(false);
+    marquerTutorielVu();
+  };
+
+  const etapeSuivante = () => {
+    if (tutorielStep >= TUTORIEL_STEPS.length - 1) {
+      fermerTutoriel();
+    } else {
+      setTutorielStep((s) => s + 1);
+    }
+  };
+
+  const etapePrecedente = () => {
+    setTutorielStep((s) => Math.max(0, s - 1));
+  };
+
+  const getTooltipStyle = (rect: DOMRect | null): React.CSSProperties => {
+    if (!rect || typeof window === "undefined") {
+      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    }
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const placeBelow = rect.top < vh / 2;
+    const top = placeBelow ? Math.min(rect.bottom + 20, vh - 40) : Math.max(rect.top - 20, 40);
+    const left = Math.min(Math.max(rect.left + rect.width / 2, 180), vw - 180);
+    return placeBelow
+      ? { top, left, transform: "translate(-50%, 0)" }
+      : { top, left, transform: "translate(-50%, -100%)" };
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -267,7 +421,7 @@ export default function DashboardPage() {
             </p>
           )}
 
-          <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div ref={statsRef} className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Total vêtements</p>
               <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -297,6 +451,9 @@ export default function DashboardPage() {
                 <Link
                   key={mod.href}
                   href={mod.href}
+                  ref={(el) => {
+                    moduleRefs.current[mod.href] = el;
+                  }}
                   className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-pink-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-pink-900"
                 >
                   <div className="mb-3 text-2xl">{mod.emoji}</div>
@@ -312,6 +469,84 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Overlay du tuto de première connexion ── */}
+      {showTutoriel && !showSplash && (
+        <>
+          {/* Bloque tous les clics sur le dashboard pendant le tuto */}
+          <div className="fixed inset-0 z-[60]" onClick={(e) => e.stopPropagation()} />
+
+          {/* Fond assombri + découpe autour de la case mise en valeur, contour noir */}
+          {highlightRect ? (
+            <div
+              className="pointer-events-none fixed z-[61] animate-vth-tuto-pulse rounded-2xl border-[3px] border-black transition-all duration-300"
+              style={{
+                top: highlightRect.top - 8,
+                left: highlightRect.left - 8,
+                width: highlightRect.width + 16,
+                height: highlightRect.height + 16,
+              }}
+            />
+          ) : (
+            <div className="pointer-events-none fixed inset-0 z-[61] bg-black/70 transition-all duration-300" />
+          )}
+
+          {/* Bulle d'explication */}
+          <div
+            className="fixed z-[62] w-[90vw] max-w-sm rounded-2xl border-2 border-black bg-white p-5 shadow-xl transition-all duration-300"
+            style={getTooltipStyle(highlightRect)}
+          >
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-pink-600">
+              Étape {tutorielStep + 1} / {TUTORIEL_STEPS.length}
+            </p>
+            <h3 className="mb-2 text-lg font-bold text-zinc-900">
+              {TUTORIEL_STEPS[tutorielStep].title}
+            </h3>
+            <p className="mb-4 text-sm leading-relaxed text-zinc-600">
+              {TUTORIEL_STEPS[tutorielStep].text}
+            </p>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={fermerTutoriel}
+                className="text-xs text-zinc-400 underline underline-offset-2 hover:text-zinc-600"
+              >
+                Passer le tutoriel
+              </button>
+              <div className="flex gap-2">
+                {tutorielStep > 0 && (
+                  <button
+                    onClick={etapePrecedente}
+                    className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                  >
+                    Précédent
+                  </button>
+                )}
+                <button
+                  onClick={etapeSuivante}
+                  className="rounded-lg bg-black px-4 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800"
+                >
+                  {tutorielStep >= TUTORIEL_STEPS.length - 1 ? "Terminer" : "Suivant"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <style jsx global>{`
+            @keyframes vth-tuto-pulse {
+              0%,
+              100% {
+                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 0 0 rgba(0, 0, 0, 0.35);
+              }
+              50% {
+                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 0 8px rgba(0, 0, 0, 0);
+              }
+            }
+            .animate-vth-tuto-pulse {
+              animation: vth-tuto-pulse 1.8s ease-in-out infinite;
+            }
+          `}</style>
+        </>
+      )}
     </>
   );
 }
