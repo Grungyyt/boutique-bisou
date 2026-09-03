@@ -36,7 +36,6 @@ export default function RootLayout({
     >
       <body className="relative min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900 antialiased selection:bg-pink-500/20 selection:text-pink-600 dark:bg-black dark:text-zinc-100 overflow-x-hidden">
         
-        {/* Background dégradé fixe */}
         <div 
           className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-20"
           style={{
@@ -45,16 +44,14 @@ export default function RootLayout({
           }}
         />
 
+        {/* Composant de suivi des visiteurs */}
         <VisitTracker />
         
         <main className="relative z-10 flex-1">
           {children}
         </main>
 
-        {/* Footer */}
         <footer className="relative z-10 w-full py-6 flex flex-col items-center gap-4 bg-white/40 border-t border-zinc-200/80 backdrop-blur-md px-4 dark:bg-zinc-950/40 dark:border-zinc-800/80">
-          
-          {/* Bouton Principal */}
           <a
             href="https://ko-fi.com/vth"
             target="_blank"
@@ -65,7 +62,6 @@ export default function RootLayout({
             ☕ Soutenir le projet
           </a>
 
-          {/* Boutons d'action */}
           <div className="flex flex-wrap justify-center gap-3">
             <a
               href="https://pdubois.lamayenne.e-lyco.fr/contact-et-horaire/"
@@ -134,7 +130,6 @@ export default function RootLayout({
           </div>
 
           <OsaStatusBadge />
-
         </footer>
       </body>
     </html>
